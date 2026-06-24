@@ -136,6 +136,9 @@
   .brand .chip img{width:100%;height:100%;object-fit:contain;display:block}
   .login .logo{align-self:center;background:#fff;border-radius:16px;padding:15px 22px;margin-bottom:22px;box-shadow:0 12px 30px rgba(0,0,0,.18)}
   .login .logo img{display:block;width:230px;max-width:62vw;height:auto}
+  .prof .photo-btn{border:1px solid var(--line);background:var(--surface);color:var(--violet-ink);font-weight:700;border-radius:11px;padding:8px 16px;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:12px}
+  .prof .name-input{border:none;text-align:center;font-size:21px;font-weight:800;font-family:inherit;outline:none;background:transparent;color:var(--ink);width:90%;max-width:300px;border-bottom:2px solid transparent}
+  .prof .name-input:focus{border-bottom-color:var(--violet)}
 </style>
 </head>
 <body>
@@ -196,9 +199,17 @@
     </div>
 
     <div class="screen hidden" id="tab-me">
-      <div class="prof"><div class="ava" id="meAvaBig">··</div><h2 id="meName">You</h2><div class="role" id="meRole">—</div></div>
+      <div class="prof">
+        <div class="ava" id="meAvaBig">··</div>
+        <input type="file" id="photoInput" accept="image/*" hidden/>
+        <button class="photo-btn" id="changePhoto">Change photo</button>
+        <input class="name-input" id="meNameInput" placeholder="Your name"/>
+        <div class="role" id="meRole">—</div>
+      </div>
       <div class="stats"><div class="stat"><b id="sPosts">0</b><small>POSTS</small></div><div class="stat"><b id="sOrders">0</b><small>ORDERS</small></div><div class="stat"><b id="sWins">0</b><small>WINS</small></div></div>
-      <button class="signout" id="signoutBtn">Sign out</button>
+      <button class="btn" id="saveProfile" style="margin-top:16px">Save changes</button>
+      <button class="signout" id="signoutBtn">Log out</button>
+      <div id="profMsg" style="text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:10px"></div>
     </div>
 
     <div class="screen hidden" id="tab-admin">
@@ -229,7 +240,7 @@
 </div>
 
 <script type="module">
-import { db, signInLink, signInPassword, emailAllowed, signOut, currentUser,
+import { db, signInLink, signInPassword, emailAllowed, signOut, currentUser, ensureProfile, updateProfile, uploadAvatar,
   getFeed, addPost, toggleLike, addComment, watchFeed, deletePost, deleteComment,
   getMenu, placeOrder, getOutings, addOuting, toggleJoin, deleteOuting,
   findOrCreateGame, watchGame, dropConnect4, placeTTT, getLeaderboard,
@@ -245,6 +256,8 @@ const initialsOf=n=>(n||'?').trim().slice(0,2).toUpperCase();
 const colorFor=n=>COLORS[((n||'').charCodeAt(0)||0)%COLORS.length];
 const tagify=t=>t.replace(/@(\w+)/g,'<span class="tag">@$1</span>');
 const esc=t=>(t||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+function avaHTML(p,extra=''){const ini=p.initials||initialsOf(p.name),col=p.color||colorFor(p.name);return p.avatar_url?`<div class="ava ${extra}" style="background:center/cover url('${p.avatar_url}')"></div>`:`<div class="ava ${extra}" style="background:${col}">${ini}</div>`;}
+function setAva(el,p){const ini=p.initials||initialsOf(p.name),col=p.color||colorFor(p.name);if(p.avatar_url){el.textContent='';el.style.background=`center/cover url('${p.avatar_url}')`;}else{el.textContent=ini;el.style.background=col;}}
 
 /* AUTH */
 $('loginBtn').onclick=async()=>{
@@ -261,20 +274,39 @@ function showLogin(){ $('login').classList.remove('hidden'); $('app').classList.
 
 async function onLogin(user){
   me=user;
-  let {data:prof}=await db.from('profiles').select('*').eq('id',me.id).maybeSingle();
-  if(!prof){ const name=me.email.split('@')[0]; await db.from('profiles').insert({id:me.id,name,initials:initialsOf(name),color:colorFor(name)}); ({data:prof}=await db.from('profiles').select('*').eq('id',me.id).maybeSingle()); }
-  if(prof?.blocked){ await signOut(); $('login').classList.remove('hidden'); $('app').classList.add('hidden'); $('loginMsg').textContent='Your access has been turned off. Contact your admin.'; return; }
-  myProfile=prof; isStaff=!!prof?.is_staff;
+  let prof=await ensureProfile(user);
+  if(!prof) prof={id:user.id,name:(user.email||'You').split('@')[0],department:'Team'};
+  if(prof.blocked){ await signOut(); $('login').classList.remove('hidden'); $('app').classList.add('hidden'); $('loginMsg').textContent='Your access has been turned off. Contact your admin.'; return; }
+  myProfile=prof; isStaff=!!prof.is_staff;
   $('login').classList.add('hidden'); $('app').classList.remove('hidden');
-  const ini=prof.initials||initialsOf(prof.name), col=prof.color||colorFor(prof.name);
-  ['meAva1','meAvaBig'].forEach(i=>{$(i).textContent=ini;$(i).style.background=col;}); $('meAva2').textContent=ini;
-  $('meName').textContent=prof.name; $('meRole').textContent=prof.department||'Team';
+  setAva($('meAva1'),prof); setAva($('meAva2'),prof); setAva($('meAvaBig'),prof);
+  $('meNameInput').value=prof.name||''; $('meRole').textContent=prof.department||'Team';
   $('navAdmin').style.display=isStaff?'flex':'none';
   await Promise.all([loadFeed(),loadMenu(),loadOutings(),loadLeaderboard(),loadStats()]);
   watchFeed(()=>loadFeed());
   if(isStaff){ loadAdmin(); watchOrders(()=>{ if(current==='admin')loadOrders(); }); }
 }
 $('signoutBtn').onclick=async()=>{ await signOut(); location.reload(); };
+$('changePhoto').onclick=()=>$('photoInput').click();
+$('photoInput').onchange=async(e)=>{
+  const file=e.target.files[0]; if(!file)return;
+  $('profMsg').textContent='Uploading photo…';
+  const {url,error}=await uploadAvatar(file);
+  if(error){$('profMsg').textContent='Upload failed: '+error.message;return;}
+  const err=await updateProfile({avatar_url:url});
+  if(err){$('profMsg').textContent='Could not save: '+err.message;return;}
+  myProfile.avatar_url=url; setAva($('meAvaBig'),myProfile); setAva($('meAva1'),myProfile); setAva($('meAva2'),myProfile);
+  $('profMsg').textContent='✓ Photo updated'; loadFeed(); loadOutings();
+};
+$('saveProfile').onclick=async()=>{
+  const name=$('meNameInput').value.trim(); if(!name){$('profMsg').textContent='Name cannot be empty.';return;}
+  const ini=name.slice(0,2).toUpperCase();
+  const err=await updateProfile({name,initials:ini});
+  if(err){$('profMsg').textContent='Could not save: '+err.message;return;}
+  myProfile.name=name; myProfile.initials=ini;
+  setAva($('meAvaBig'),myProfile); setAva($('meAva1'),myProfile); setAva($('meAva2'),myProfile);
+  $('profMsg').textContent='✓ Saved'; loadFeed(); loadOutings(); loadStats();
+};
 
 /* FEED */
 async function loadFeed(){
@@ -284,7 +316,7 @@ async function loadFeed(){
     const a=p.author||{}, ini=a.initials||initialsOf(a.name), col=a.color||colorFor(a.name);
     const likes=p.post_likes||[], liked=likes.some(l=>l.user_id===me.id), cmts=p.comments||[];
     return `<div class="card"><div class="post">
-      <div class="who"><div class="ava" style="background:${col}">${ini}</div>
+      <div class="who">${avaHTML(a)}
         <div><div class="name">${esc(a.name||'Someone')}</div><div class="meta">${esc(a.department||'Team')}</div></div>
         ${isStaff?`<button class="del" data-delpost="${p.id}" title="Remove post">🗑</button>`:''}</div>
       <p>${tagify(esc(p.text))}</p>${p.media_emoji?`<div class="media">${p.media_emoji}</div>`:''}
@@ -303,8 +335,8 @@ async function loadFeed(){
   F.querySelectorAll('[data-delpost]').forEach(b=>b.onclick=async()=>{if(confirm('Remove this post?')){await deletePost(b.dataset.delpost);loadFeed();}});
   F.querySelectorAll('[data-delcmt]').forEach(b=>b.onclick=async()=>{await deleteComment(b.dataset.delcmt);loadFeed();});
 }
-async function sendComment(pid){const i=document.querySelector(`[data-ci="${pid}"]`);if(!i.value.trim())return;await addComment(pid,i.value.trim());i.value='';loadFeed();}
-$('postBtn').onclick=async()=>{const el=$('newPost');if(!el.value.trim())return;el.disabled=true;await addPost(el.value.trim());el.value='';el.disabled=false;loadFeed();loadStats();};
+async function sendComment(pid){const i=document.querySelector(`[data-ci="${pid}"]`);if(!i.value.trim())return;const err=await addComment(pid,i.value.trim());if(err){alert('Could not comment: '+err.message);return;}i.value='';loadFeed();}
+$('postBtn').onclick=async()=>{const el=$('newPost');if(!el.value.trim())return;el.disabled=true;const err=await addPost(el.value.trim());el.disabled=false;if(err){alert('Could not post: '+err.message);return;}el.value='';loadFeed();loadStats();};
 
 /* SHOP */
 async function loadMenu(){menuCache=await getMenu();renderMenu();}
@@ -353,7 +385,7 @@ async function loadOutings(){
   $('outingList').innerHTML=outs.map(o=>{
     const a=o.author||{},ini=a.initials||initialsOf(a.name),col=a.color||colorFor(a.name);
     const joins=o.outing_joins||[],joined=joins.some(j=>j.user_id===me.id);
-    return `<div class="card"><div class="post"><div class="who"><div class="ava" style="background:${col}">${ini}</div>
+    return `<div class="card"><div class="post"><div class="who">${avaHTML(a)}
       <div><div class="name">${esc(a.name||'Someone')}</div><div class="meta">${esc(a.department||'Team')}</div></div>
       ${isStaff?`<button class="del" data-delout="${o.id}">🗑</button>`:''}</div>
       ${o.pill?`<span class="pill">${esc(o.pill)}</span>`:''}<p>${tagify(esc(o.text))}</p>
@@ -363,7 +395,7 @@ async function loadOutings(){
   $('outingList').querySelectorAll('[data-join]').forEach(b=>b.onclick=async()=>{await toggleJoin(b.dataset.join);loadOutings();});
   $('outingList').querySelectorAll('[data-delout]').forEach(b=>b.onclick=async()=>{if(confirm('Remove this plan?')){await deleteOuting(b.dataset.delout);loadOutings();}});
 }
-$('outingBtn').onclick=async()=>{const el=$('newOuting');if(!el.value.trim())return;el.disabled=true;await addOuting(el.value.trim(),'🗓️ New plan');el.value='';el.disabled=false;loadOutings();};
+$('outingBtn').onclick=async()=>{const el=$('newOuting');if(!el.value.trim())return;el.disabled=true;const err=await addOuting(el.value.trim(),'🗓️ New plan');el.disabled=false;if(err){alert('Could not post plan: '+err.message);return;}el.value='';loadOutings();};
 
 /* PLAY */
 async function loadLeaderboard(){
