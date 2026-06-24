@@ -157,7 +157,7 @@
 
     <div class="screen" id="tab-feed">
       <div class="card"><div class="compose"><div class="ava" id="meAva1">··</div><textarea id="newPost" placeholder="Share something with the team…"></textarea></div>
-        <div style="padding:0 13px 13px"><button class="mini" style="padding:9px 16px" id="postBtn">Post</button></div></div>
+        <div style="padding:0 13px 13px;display:flex;align-items:center;gap:10px"><button class="mini" style="padding:9px 16px" id="postBtn">Post</button><span id="postMsg" style="font-size:12.5px;color:var(--ink-soft)"></span></div></div>
       <div id="feedList"><div class="empty">Loading the feed…</div></div>
     </div>
 
@@ -336,7 +336,22 @@ async function loadFeed(){
   F.querySelectorAll('[data-delcmt]').forEach(b=>b.onclick=async()=>{await deleteComment(b.dataset.delcmt);loadFeed();});
 }
 async function sendComment(pid){const i=document.querySelector(`[data-ci="${pid}"]`);if(!i.value.trim())return;const err=await addComment(pid,i.value.trim());if(err){alert('Could not comment: '+err.message);return;}i.value='';loadFeed();}
-$('postBtn').onclick=async()=>{const el=$('newPost');if(!el.value.trim())return;el.disabled=true;const err=await addPost(el.value.trim());el.disabled=false;if(err){alert('Could not post: '+err.message);return;}el.value='';loadFeed();loadStats();};
+$('postBtn').onclick=async()=>{
+  const el=$('newPost'), msg=$('postMsg');
+  if(!el.value.trim()){msg.textContent='Type something first.';return;}
+  msg.style.color='var(--ink-soft)'; msg.textContent='Posting…';
+  try{
+    const user=await currentUser();
+    if(!user){msg.style.color='var(--coral)';msg.textContent='Not signed in — log in again.';return;}
+    await ensureProfile(user);
+    const err=await addPost(el.value.trim());
+    if(err){msg.style.color='var(--coral)';msg.textContent='Error: '+(err.message||err.hint||err.details||JSON.stringify(err));console.error('POST ERROR',err);return;}
+    el.value=''; msg.style.color='var(--teal)'; msg.textContent='✓ Posted';
+    await loadFeed(); loadStats(); setTimeout(()=>{msg.textContent='';},2500);
+  }catch(e){
+    msg.style.color='var(--coral)'; msg.textContent='Error: '+(e&&e.message?e.message:e); console.error('POST EXCEPTION',e);
+  }
+};
 
 /* SHOP */
 async function loadMenu(){menuCache=await getMenu();renderMenu();}
