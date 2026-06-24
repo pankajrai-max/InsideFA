@@ -6,60 +6,48 @@
 <title>Hive — your office, all in one place</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
-  :root{
-    --bg:#F6F4FB; --surface:#FFFFFF; --surface-2:#F1EDFB;
-    --ink:#211B2E; --ink-soft:#6B6480; --line:#E8E3F4;
-    --violet:#6C4DF2; --violet-ink:#4A32C0;
-    --amber:#FFB23E; --teal:#13C2A3; --coral:#FF6B6B;
-    --red:#FF5D6C; --yellow:#FFC83D;
-    --radius:18px; --shadow:0 10px 30px rgba(64,45,140,.10); --tap:0 2px 0 rgba(74,50,192,.18);
-  }
+  :root{--bg:#F6F4FB;--surface:#FFFFFF;--surface-2:#F1EDFB;--ink:#211B2E;--ink-soft:#6B6480;--line:#E8E3F4;--violet:#6C4DF2;--violet-ink:#4A32C0;--amber:#FFB23E;--teal:#13C2A3;--coral:#FF6B6B;--red:#FF5D6C;--yellow:#FFC83D;--radius:18px;--shadow:0 10px 30px rgba(64,45,140,.10);--tap:0 2px 0 rgba(74,50,192,.18)}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;height:100%}
   body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);display:flex;justify-content:center;-webkit-font-smoothing:antialiased}
   .phone{width:100%;max-width:460px;min-height:100vh;background:var(--bg);position:relative;display:flex;flex-direction:column;box-shadow:0 0 60px rgba(64,45,140,.12)}
   @media (min-width:520px){.phone{min-height:auto;height:920px;margin:24px 0;border-radius:34px;overflow:hidden;border:1px solid var(--line)}}
-
-  /* LOGIN */
   .login{position:absolute;inset:0;z-index:60;background:linear-gradient(160deg,#6C4DF2,#3a268f);color:#fff;display:flex;flex-direction:column;justify-content:center;padding:34px;text-align:center}
   .login .mark{width:62px;height:62px;border-radius:18px;background:rgba(255,255,255,.16);display:grid;place-items:center;font-weight:800;font-size:32px;margin:0 auto 20px}
   .login h1{font-size:28px;margin:0 0 6px;letter-spacing:-.02em}
   .login p{opacity:.85;font-size:14px;margin:0 0 26px;line-height:1.5}
   .login input{width:100%;border:none;border-radius:14px;padding:15px;font-size:15px;font-family:inherit;outline:none;margin-bottom:12px}
   .login button{width:100%;border:none;border-radius:14px;padding:15px;font-size:15px;font-weight:800;font-family:inherit;background:#fff;color:var(--violet-ink);cursor:pointer}
-  .login .msg{margin-top:16px;font-size:13.5px;opacity:.9;min-height:18px}
-
+  .login .msg{margin-top:16px;font-size:13.5px;opacity:.95;min-height:18px}
   .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;background:var(--bg)}
   .brand{display:flex;align-items:center;gap:9px}
   .brand .mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--violet),#9B7BFF);display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px;box-shadow:var(--shadow)}
   .brand b{font-size:20px;letter-spacing:-.02em}
   .brand span{color:var(--ink-soft);font-weight:600;font-size:11px;display:block;margin-top:-3px}
   .bell{width:38px;height:38px;border-radius:11px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;font-size:17px}
-
   .screen{flex:1;overflow-y:auto;padding:4px 14px 96px;-webkit-overflow-scrolling:touch}
   .screen::-webkit-scrollbar{display:none}
   .hidden{display:none}
   .eyebrow{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--violet);margin:14px 4px 8px}
   .empty{color:var(--ink-soft);font-size:13.5px;text-align:center;padding:30px 10px;line-height:1.5}
-
   .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden}
   .post{padding:14px 15px}
   .who{display:flex;align-items:center;gap:10px;margin-bottom:10px}
   .ava{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px;flex:none}
   .who .name{font-weight:700;font-size:14.5px;line-height:1.1}
   .who .meta{font-size:12px;color:var(--ink-soft)}
+  .who .del{margin-left:auto;border:none;background:none;color:var(--coral);font-size:16px;cursor:pointer;padding:4px}
   .post p{margin:2px 0 12px;font-size:14.5px;line-height:1.5}
   .post p .tag{color:var(--violet);font-weight:700}
   .media{height:170px;border-radius:14px;display:grid;place-items:center;font-size:46px;margin-bottom:12px;background:linear-gradient(135deg,#ede9ff,#dbd2ff)}
   .acts{display:flex;gap:6px;border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
   .act{flex:1;border:none;background:none;color:var(--ink-soft);font-weight:600;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px;border-radius:10px;cursor:pointer;font-family:inherit}
   .act:active{background:var(--surface-2)}
-  .act.on{color:var(--coral)}
-  .act .ic{font-size:16px;transition:transform .15s}
-  .act.on .ic{transform:scale(1.25)}
+  .act.on{color:var(--coral)}.act .ic{font-size:16px;transition:transform .15s}.act.on .ic{transform:scale(1.25)}
   .comments{padding:0 4px 4px}
-  .cmt{font-size:13px;line-height:1.45;margin:6px 0;padding:8px 11px;background:var(--surface-2);border-radius:12px}
+  .cmt{font-size:13px;line-height:1.45;margin:6px 0;padding:8px 11px;background:var(--surface-2);border-radius:12px;display:flex;justify-content:space-between;gap:8px}
   .cmt b{font-weight:700}
+  .cmt .del{border:none;background:none;color:var(--coral);cursor:pointer;font-size:13px;flex:none}
   .cmt-row{display:flex;gap:8px;margin-top:8px}
   .cmt-row input{flex:1;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:9px 12px;font-size:13.5px;font-family:inherit;outline:none}
   .cmt-row input:focus{border-color:var(--violet)}
@@ -67,12 +55,9 @@
   .compose{display:flex;gap:10px;padding:13px;align-items:flex-start}
   .compose textarea{flex:1;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:14px;resize:none;font-family:inherit;outline:none;min-height:42px}
   .compose textarea:focus{border-color:var(--violet)}
-
   .menu-item{display:flex;gap:12px;padding:12px;align-items:center}
   .menu-item .pic{width:54px;height:54px;border-radius:13px;display:grid;place-items:center;font-size:28px;flex:none;background:var(--surface-2)}
-  .menu-item .info{flex:1}
-  .menu-item .info b{font-size:14.5px}
-  .menu-item .info small{display:block;color:var(--ink-soft);font-size:12px;margin-top:1px}
+  .menu-item .info{flex:1}.menu-item .info b{font-size:14.5px}.menu-item .info small{display:block;color:var(--ink-soft);font-size:12px;margin-top:1px}
   .price{font-weight:800;color:var(--violet-ink);font-size:14px}
   .add{margin-left:6px;border:none;background:var(--surface-2);color:var(--violet-ink);font-weight:800;border-radius:11px;width:34px;height:34px;font-size:19px;cursor:pointer;flex:none}
   .add:active{background:var(--violet);color:#fff}
@@ -82,7 +67,6 @@
   .cartbar{position:absolute;left:14px;right:14px;bottom:84px;z-index:15;background:var(--violet);color:#fff;border-radius:16px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 12px 28px rgba(76,45,210,.4);cursor:pointer;transform:translateY(140%);transition:transform .28s cubic-bezier(.2,.9,.3,1.2)}
   .cartbar.show{transform:translateY(0)}
   .cartbar .go{background:rgba(255,255,255,.2);padding:7px 14px;border-radius:10px;font-weight:700;font-size:13.5px}
-
   .btn{display:block;width:100%;border:none;background:var(--violet);color:#fff;font-weight:800;font-size:15px;padding:15px;border-radius:14px;cursor:pointer;font-family:inherit;box-shadow:var(--tap)}
   .btn:active{transform:translateY(1px)}
   .btn.ghost{background:var(--surface);color:var(--violet-ink);border:1px solid var(--line);box-shadow:none}
@@ -91,69 +75,69 @@
   .sheet{background:var(--surface);width:100%;border-radius:24px 24px 0 0;padding:8px 18px 24px;animation:up .3s cubic-bezier(.2,.9,.3,1.1)}
   @keyframes up{from{transform:translateY(100%)}to{transform:translateY(0)}}
   .grab{width:40px;height:5px;border-radius:3px;background:var(--line);margin:8px auto 14px}
-  .sheet h3{margin:2px 0 4px;font-size:19px}
-  .sheet .sub{color:var(--ink-soft);font-size:13px;margin-bottom:16px}
+  .sheet h3{margin:2px 0 4px;font-size:19px}.sheet .sub{color:var(--ink-soft);font-size:13px;margin-bottom:16px}
   #qr{display:grid;place-items:center;padding:14px;background:#fff;border-radius:16px;border:1px solid var(--line);width:max-content;margin:0 auto 6px}
   #qr img,#qr canvas{display:block;border-radius:6px}
-  .upi-id{text-align:center;font-size:13px;color:var(--ink-soft);margin-bottom:16px}
-  .upi-id b{color:var(--ink)}
+  .upi-id{text-align:center;font-size:13px;color:var(--ink-soft);margin-bottom:16px}.upi-id b{color:var(--ink)}
   .done{text-align:center;padding:14px 6px 4px}
   .done .tick{width:66px;height:66px;border-radius:50%;background:var(--teal);color:#fff;display:grid;place-items:center;font-size:34px;margin:6px auto 14px;animation:pop .4s cubic-bezier(.2,.9,.3,1.4)}
   @keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
-
-  .going{display:flex;align-items:center;margin:10px 0 6px}
-  .going .stack{display:flex}
-  .going .stack .ava{width:30px;height:30px;font-size:12px;margin-left:-8px;border:2px solid var(--surface)}
-  .going .stack .ava:first-child{margin-left:0}
+  .going{display:flex;align-items:center;margin:10px 0 6px}.going .stack{display:flex}
+  .going .stack .ava{width:30px;height:30px;font-size:12px;margin-left:-8px;border:2px solid var(--surface)}.going .stack .ava:first-child{margin-left:0}
   .going small{color:var(--ink-soft);font-size:12.5px;margin-left:8px;font-weight:600}
   .join{margin-top:4px;border:1px solid var(--violet);background:var(--surface);color:var(--violet-ink);font-weight:800;border-radius:12px;padding:10px;width:100%;cursor:pointer;font-family:inherit;font-size:13.5px}
   .join.in{background:var(--violet);color:#fff;border-color:var(--violet)}
   .pill{display:inline-block;background:var(--surface-2);color:var(--violet-ink);font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;margin-bottom:8px}
-
   .game-pick{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
   .game-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;cursor:pointer;box-shadow:var(--shadow)}
-  .game-card .em{font-size:34px}
-  .game-card b{display:block;margin-top:8px;font-size:14.5px}
-  .game-card small{color:var(--ink-soft);font-size:12px}
+  .game-card .em{font-size:34px}.game-card b{display:block;margin-top:8px;font-size:14.5px}.game-card small{color:var(--ink-soft);font-size:12px}
   .game-card.soon{opacity:.55}
   .turn{display:flex;align-items:center;justify-content:center;gap:9px;font-weight:800;font-size:15px;margin:6px 0 12px;text-align:center}
   .dot{width:18px;height:18px;border-radius:50%}
   .board{background:var(--violet);padding:10px;border-radius:16px;display:grid;grid-template-columns:repeat(7,1fr);gap:7px;box-shadow:var(--shadow)}
   .cell{aspect-ratio:1;background:var(--surface);border-radius:50%;cursor:pointer}
-  .cell.r{background:var(--red);animation:drop .25s ease}
-  .cell.y{background:var(--yellow);animation:drop .25s ease}
+  .cell.r{background:var(--red);animation:drop .25s ease}.cell.y{background:var(--yellow);animation:drop .25s ease}
   @keyframes drop{from{transform:translateY(-220%)}to{transform:translateY(0)}}
+  .ttt{background:var(--violet);padding:10px;border-radius:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;box-shadow:var(--shadow);max-width:300px;margin:0 auto}
+  .tcell{aspect-ratio:1;background:var(--surface);border-radius:12px;display:grid;place-items:center;font-size:42px;font-weight:800;cursor:pointer}
+  .tcell.x{color:var(--red)}.tcell.o{color:var(--amber)}
+  .mem{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;max-width:320px;margin:0 auto}
+  .mcard{aspect-ratio:1;border-radius:12px;background:var(--violet);color:#fff;display:grid;place-items:center;font-size:30px;cursor:pointer;box-shadow:var(--shadow);transition:transform .15s}
+  .mcard.up{background:var(--surface);border:1px solid var(--line)}
+  .mcard.done{background:var(--surface-2);opacity:.55;cursor:default}
   .win-banner{text-align:center;font-weight:800;font-size:16px;margin:14px 0 4px}
   .lead-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:13px;margin-bottom:8px}
-  .lead-row .rk{font-weight:800;color:var(--ink-soft);width:18px}
-  .lead-row .name{flex:1;font-weight:700;font-size:14px}
-  .lead-row .pts{font-weight:800;color:var(--violet-ink)}
-
-  .prof{text-align:center;padding:22px 0 8px}
-  .prof .ava{width:84px;height:84px;font-size:32px;margin:0 auto 12px}
-  .prof h2{margin:0;font-size:21px}
-  .prof .role{color:var(--ink-soft);font-size:13.5px;margin-top:2px}
+  .lead-row .rk{font-weight:800;color:var(--ink-soft);width:18px}.lead-row .name{flex:1;font-weight:700;font-size:14px}.lead-row .pts{font-weight:800;color:var(--violet-ink)}
+  .prof{text-align:center;padding:22px 0 8px}.prof .ava{width:84px;height:84px;font-size:32px;margin:0 auto 12px}.prof h2{margin:0;font-size:21px}.prof .role{color:var(--ink-soft);font-size:13.5px;margin-top:2px}
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}
-  .stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 6px;text-align:center}
-  .stat b{display:block;font-size:20px;color:var(--violet-ink)}
-  .stat small{color:var(--ink-soft);font-size:11.5px;font-weight:600}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 6px;text-align:center}.stat b{display:block;font-size:20px;color:var(--violet-ink)}.stat small{color:var(--ink-soft);font-size:11.5px;font-weight:600}
   .signout{margin-top:20px;border:1px solid var(--line);background:var(--surface);color:var(--coral);font-weight:800;border-radius:14px;padding:14px;width:100%;cursor:pointer;font-family:inherit;font-size:14px}
-
-  .nav{position:absolute;bottom:0;left:0;right:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);display:flex;padding:8px 6px calc(8px + env(safe-area-inset-bottom))}
-  .nav button{flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;color:var(--ink-soft);font-weight:700;font-size:10.5px;cursor:pointer;font-family:inherit;position:relative}
-  .nav button .ni{font-size:21px;line-height:1}
-  .nav button.active{color:var(--violet)}
-  .badge{position:absolute;top:2px;margin-left:16px;background:var(--coral);color:#fff;font-size:9px;font-weight:800;min-width:15px;height:15px;border-radius:8px;display:grid;place-items:center;padding:0 3px}
+  /* admin */
+  .adm{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+  .adm .top{display:flex;align-items:center;gap:10px}
+  .adm .top b{font-size:14px}.adm .top .when{margin-left:auto;font-size:11px;color:var(--ink-soft)}
+  .adm .items{font-size:12.5px;color:var(--ink-soft);margin:6px 0 10px;line-height:1.5}
+  .status-pill{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em}
+  .s-placed{background:#fde9ec;color:#c0314a}.s-preparing{background:#fff1dd;color:#a9730f}.s-ready{background:#e3fbf3;color:#0c8d72}
+  .adm .row{display:flex;align-items:center;gap:10px}
+  .adm .grow{flex:1}.adm .nm{font-weight:700;font-size:14px}.adm .dp{font-size:11.5px;color:var(--ink-soft)}
+  .tag-staff{font-size:10px;font-weight:800;color:var(--violet-ink);background:var(--surface-2);padding:2px 7px;border-radius:10px}
+  .tag-block{font-size:10px;font-weight:800;color:#c0314a;background:#fde9ec;padding:2px 7px;border-radius:10px}
+  .abtn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 11px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit;color:var(--ink)}
+  .abtn.danger{color:var(--coral);border-color:#f6d5da}.abtn.go{background:var(--violet);color:#fff;border:none}
+  .inv{display:flex;gap:8px;margin-bottom:6px}
+  .inv input{flex:1;border:1px solid var(--line);border-radius:11px;padding:11px;font-size:13.5px;font-family:inherit;outline:none}
+  .nav{position:absolute;bottom:0;left:0;right:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);display:flex;padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
+  .nav button{flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;color:var(--ink-soft);font-weight:700;font-size:10px;cursor:pointer;font-family:inherit;position:relative}
+  .nav button .ni{font-size:20px;line-height:1}.nav button.active{color:var(--violet)}
+  .badge{position:absolute;top:2px;margin-left:15px;background:var(--coral);color:#fff;font-size:9px;font-weight:800;min-width:15px;height:15px;border-radius:8px;display:grid;place-items:center;padding:0 3px}
 </style>
 </head>
 <body>
 <div class="phone">
-
-  <!-- LOGIN -->
   <div class="login" id="login">
-    <div class="mark">H</div>
-    <h1>Welcome to Hive</h1>
-    <p>Your office feed, tuck shop, outings and games — all in one place. Sign in with your work email.</p>
+    <div class="mark">H</div><h1>Welcome to Hive</h1>
+    <p>Your office feed, tuck shop, outings and games — all in one place.</p>
     <input id="email" type="email" placeholder="you@flick2know.com" autocomplete="email" />
     <input id="password" type="password" placeholder="Password — admin only (leave blank otherwise)" autocomplete="current-password" />
     <button id="loginBtn">Sign in</button>
@@ -161,29 +145,19 @@
   </div>
 
   <div id="app" class="hidden" style="display:flex;flex-direction:column;flex:1;min-height:0">
-    <div class="topbar">
-      <div class="brand"><div class="mark">H</div><div><b>Hive</b><span>your office, all in one place</span></div></div>
-      <div class="bell">🔔</div>
-    </div>
+    <div class="topbar"><div class="brand"><div class="mark">H</div><div><b>Hive</b><span>your office, all in one place</span></div></div><div class="bell">🔔</div></div>
 
     <div class="screen" id="tab-feed">
-      <div class="card">
-        <div class="compose"><div class="ava" id="meAva1">··</div><textarea id="newPost" placeholder="Share something with the team…"></textarea></div>
-        <div style="padding:0 13px 13px"><button class="mini" style="padding:9px 16px" id="postBtn">Post</button></div>
-      </div>
+      <div class="card"><div class="compose"><div class="ava" id="meAva1">··</div><textarea id="newPost" placeholder="Share something with the team…"></textarea></div>
+        <div style="padding:0 13px 13px"><button class="mini" style="padding:9px 16px" id="postBtn">Post</button></div></div>
       <div id="feedList"><div class="empty">Loading the feed…</div></div>
     </div>
 
-    <div class="screen hidden" id="tab-shop">
-      <div class="eyebrow">Tuck shop · open till 6pm</div>
-      <div class="card" id="menuList"></div>
-    </div>
+    <div class="screen hidden" id="tab-shop"><div class="eyebrow">Tuck shop · open till 6pm</div><div class="card" id="menuList"></div></div>
 
     <div class="screen hidden" id="tab-outings">
-      <div class="card">
-        <div class="compose"><div class="ava" id="meAva2" style="background:var(--teal)">··</div><textarea id="newOuting" placeholder="Going somewhere? Invite the team…"></textarea></div>
-        <div style="padding:0 13px 13px"><button class="mini" style="padding:9px 16px;background:var(--teal)" id="outingBtn">Post plan</button></div>
-      </div>
+      <div class="card"><div class="compose"><div class="ava" id="meAva2" style="background:var(--teal)">··</div><textarea id="newOuting" placeholder="Going somewhere? Invite the team…"></textarea></div>
+        <div style="padding:0 13px 13px"><button class="mini" style="padding:9px 16px;background:var(--teal)" id="outingBtn">Post plan</button></div></div>
       <div id="outingList"></div>
     </div>
 
@@ -191,34 +165,47 @@
       <div id="gameLobby">
         <div class="eyebrow">Play with the team</div>
         <div class="game-pick">
-          <div class="game-card" id="openC4"><div class="em">🔴</div><b>Connect Four</b><small>2 players · live</small></div>
-          <div class="game-card soon"><div class="em">♟️</div><b>Chess</b><small>coming soon</small></div>
+          <div class="game-card" data-game="connect4"><div class="em">🔴</div><b>Connect Four</b><small>2 players · live</small></div>
+          <div class="game-card" data-game="ttt"><div class="em">⭕</div><b>Tic-Tac-Toe</b><small>2 players · live</small></div>
+          <div class="game-card" data-game="memory"><div class="em">🧩</div><b>Memory Match</b><small>solo · beat your time</small></div>
           <div class="game-card soon"><div class="em">🧠</div><b>Quiz battle</b><small>coming soon</small></div>
-          <div class="game-card soon"><div class="em">🅦</div><b>Word duel</b><small>coming soon</small></div>
         </div>
         <div class="eyebrow">This week's leaderboard</div>
         <div id="leaderboard"></div>
       </div>
-      <div id="gameScreen" class="hidden">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin:6px 2px 2px">
-          <button class="mini" style="background:var(--surface-2);color:var(--violet-ink)" id="leaveGame">← Back</button>
-          <b style="font-size:15px">Connect Four</b>
-          <button class="mini" style="background:var(--surface-2);color:var(--violet-ink)" id="newGame">New</button>
-        </div>
-        <div class="turn" id="turn"></div>
-        <div class="board" id="board"></div>
-        <div class="win-banner hidden" id="winBanner"></div>
+
+      <div id="gameC4" class="hidden">
+        <div class="row" style="display:flex;align-items:center;justify-content:space-between;margin:6px 2px 2px"><button class="mini" style="background:var(--surface-2);color:var(--violet-ink)" data-leave>← Back</button><b style="font-size:15px">Connect Four</b><button class="mini" style="background:var(--surface-2);color:var(--violet-ink)" data-newc4>New</button></div>
+        <div class="turn" id="c4turn"></div><div class="board" id="c4board"></div><div class="win-banner hidden" id="c4win"></div>
+      </div>
+
+      <div id="gameTTT" class="hidden">
+        <div class="row" style="display:flex;align-items:center;justify-content:space-between;margin:6px 2px 2px"><button class="mini" style="background:var(--surface-2);color:var(--violet-ink)" data-leave>← Back</button><b style="font-size:15px">Tic-Tac-Toe</b><button class="mini" style="background:var(--surface-2);color:var(--violet-ink)" data-newttt>New</button></div>
+        <div class="turn" id="tttturn"></div><div class="ttt" id="tttboard"></div><div class="win-banner hidden" id="tttwin"></div>
+      </div>
+
+      <div id="gameMem" class="hidden">
+        <div class="row" style="display:flex;align-items:center;justify-content:space-between;margin:6px 2px 12px"><button class="mini" style="background:var(--surface-2);color:var(--violet-ink)" data-leave>← Back</button><b style="font-size:15px" id="memMoves">Moves: 0</b><button class="mini" style="background:var(--surface-2);color:var(--violet-ink)" data-newmem>New</button></div>
+        <div class="mem" id="memBoard"></div><div class="win-banner hidden" id="memWin"></div>
       </div>
     </div>
 
     <div class="screen hidden" id="tab-me">
       <div class="prof"><div class="ava" id="meAvaBig">··</div><h2 id="meName">You</h2><div class="role" id="meRole">—</div></div>
-      <div class="stats">
-        <div class="stat"><b id="sPosts">0</b><small>POSTS</small></div>
-        <div class="stat"><b id="sOrders">0</b><small>ORDERS</small></div>
-        <div class="stat"><b id="sWins">0</b><small>WINS</small></div>
-      </div>
+      <div class="stats"><div class="stat"><b id="sPosts">0</b><small>POSTS</small></div><div class="stat"><b id="sOrders">0</b><small>ORDERS</small></div><div class="stat"><b id="sWins">0</b><small>WINS</small></div></div>
       <button class="signout" id="signoutBtn">Sign out</button>
+    </div>
+
+    <div class="screen hidden" id="tab-admin">
+      <div class="eyebrow">Order queue</div>
+      <div id="admOrders"></div>
+      <div class="eyebrow">Invite a teammate</div>
+      <div class="adm"><div class="inv"><input id="inviteEmail" type="email" placeholder="name@flick2know.com" /><button class="abtn go" id="inviteBtn">Send</button></div><div id="inviteMsg" style="font-size:12px;color:var(--ink-soft)"></div></div>
+      <div class="eyebrow">Menu</div>
+      <div class="adm"><div class="inv"><input id="miName" placeholder="Item" style="flex:2"/><input id="miPrice" placeholder="₹" type="number" style="flex:1"/><input id="miEmoji" placeholder="🍪" style="flex:1"/><button class="abtn go" id="miAdd">Add</button></div></div>
+      <div id="admMenu"></div>
+      <div class="eyebrow">People</div>
+      <div id="admUsers"></div>
     </div>
 
     <div class="cartbar" id="cartbar"><b id="cartText">1 item</b><div class="go" id="cartTotal">Pay ₹0 →</div></div>
@@ -229,6 +216,7 @@
       <button data-tab="outings"><span class="ni">🎉</span>Outings</button>
       <button data-tab="play"><span class="ni">🎮</span>Play</button>
       <button data-tab="me"><span class="ni">👤</span>Me</button>
+      <button data-tab="admin" id="navAdmin" style="display:none"><span class="ni">🛡️</span>Admin</button>
     </div>
 
     <div class="sheet-bg" id="sheet"><div class="sheet" id="sheetBody"></div></div>
@@ -236,227 +224,265 @@
 </div>
 
 <script type="module">
-import { db, signInLink, signInPassword, emailAllowed, signOut, currentUser, getFeed, addPost, toggleLike, addComment,
-         watchFeed, getMenu, placeOrder, getOutings, addOuting, toggleJoin,
-         findOrCreateGame, dropPiece, watchGame, getLeaderboard } from './db.js';
+import { db, signInLink, signInPassword, emailAllowed, signOut, currentUser,
+  getFeed, addPost, toggleLike, addComment, watchFeed, deletePost, deleteComment,
+  getMenu, placeOrder, getOutings, addOuting, toggleJoin, deleteOuting,
+  findOrCreateGame, watchGame, dropConnect4, placeTTT, getLeaderboard,
+  inviteUser, getOpenOrders, setOrderStatus, watchOrders, getAllUsers, setBlocked, removeUser,
+  getMenuAll, addMenuItem, setMenuAvailable, deleteMenuItem } from './db.js';
 
 const $=id=>document.getElementById(id);
-let me=null, myProfile=null, current='feed';
-let menuCache=[], cart={};                 // cart: itemId -> qty
-let game=null, myNum=null, gameSub=null, feedSub=null;
+let me=null, myProfile=null, isStaff=false, current='feed';
+let menuCache=[], cart={};
+let game=null, myNum=null, gameSub=null;
 const COLORS=['#6C4DF2','#13C2A3','#FFB23E','#FF6B6B','#4A32C0','#0EA5E9'];
 const initialsOf=n=>(n||'?').trim().slice(0,2).toUpperCase();
 const colorFor=n=>COLORS[((n||'').charCodeAt(0)||0)%COLORS.length];
 const tagify=t=>t.replace(/@(\w+)/g,'<span class="tag">@$1</span>');
 const esc=t=>(t||'').replace(/[<>&]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
 
-/* ---------- AUTH ---------- */
+/* AUTH */
 $('loginBtn').onclick=async()=>{
   const email=$('email').value.trim(), pw=$('password').value;
   if(!email){$('loginMsg').textContent='Enter your email first.';return;}
   if(!emailAllowed(email)){$('loginMsg').textContent='Only flick2know.com, fieldassist.com and fieldassist.in emails can sign in.';return;}
-  if(pw){
-    $('loginMsg').textContent='Signing in…';
-    const err=await signInPassword(email,pw);
-    if(err) $('loginMsg').textContent='Hmm: '+err.message;   // success → onAuthStateChange takes over
-  } else {
-    $('loginMsg').textContent='Sending…';
-    const err=await signInLink(email);
-    $('loginMsg').textContent=err? ('Hmm: '+err.message) : '✓ Check your inbox and tap the link to sign in.';
-  }
+  if(pw){ $('loginMsg').textContent='Signing in…'; const err=await signInPassword(email,pw); if(err)$('loginMsg').textContent='Hmm: '+err.message; }
+  else  { $('loginMsg').textContent='Sending…'; const err=await signInLink(email); $('loginMsg').textContent=err?('Hmm: '+err.message):'✓ Check your inbox and tap the link to sign in.'; }
 };
 $('password').addEventListener('keydown',e=>{if(e.key==='Enter')$('loginBtn').click();});
-$('email').addEventListener('keydown',e=>{if(e.key==='Enter')$('loginBtn').click();});
-
-db.auth.onAuthStateChange((_e,session)=>{ session? onLogin(session.user) : showLogin(); });
-(async()=>{ const {data:{session}}=await db.auth.getSession(); session? onLogin(session.user) : showLogin(); })();
-
+db.auth.onAuthStateChange((_e,s)=>{ s?onLogin(s.user):showLogin(); });
+(async()=>{ const {data:{session}}=await db.auth.getSession(); session?onLogin(session.user):showLogin(); })();
 function showLogin(){ $('login').classList.remove('hidden'); $('app').classList.add('hidden'); }
 
 async function onLogin(user){
   me=user;
+  let {data:prof}=await db.from('profiles').select('*').eq('id',me.id).maybeSingle();
+  if(!prof){ const name=me.email.split('@')[0]; await db.from('profiles').insert({id:me.id,name,initials:initialsOf(name),color:colorFor(name)}); ({data:prof}=await db.from('profiles').select('*').eq('id',me.id).maybeSingle()); }
+  if(prof?.blocked){ await signOut(); $('login').classList.remove('hidden'); $('app').classList.add('hidden'); $('loginMsg').textContent='Your access has been turned off. Contact your admin.'; return; }
+  myProfile=prof; isStaff=!!prof?.is_staff;
   $('login').classList.add('hidden'); $('app').classList.remove('hidden');
-  const {data:prof}=await db.from('profiles').select('*').eq('id',me.id).maybeSingle();
-  myProfile=prof||{name:me.email.split('@')[0],department:'Team'};
-  const ini=myProfile.initials||initialsOf(myProfile.name), col=myProfile.color||colorFor(myProfile.name);
-  for(const idd of ['meAva1','meAvaBig']){ $(idd).textContent=ini; $(idd).style.background=col; }
-  $('meAva2').textContent=ini;
-  $('meName').textContent=myProfile.name; $('meRole').textContent=(myProfile.department||'Team');
+  const ini=prof.initials||initialsOf(prof.name), col=prof.color||colorFor(prof.name);
+  ['meAva1','meAvaBig'].forEach(i=>{$(i).textContent=ini;$(i).style.background=col;}); $('meAva2').textContent=ini;
+  $('meName').textContent=prof.name; $('meRole').textContent=prof.department||'Team';
+  $('navAdmin').style.display=isStaff?'flex':'none';
   await Promise.all([loadFeed(),loadMenu(),loadOutings(),loadLeaderboard(),loadStats()]);
-  if(feedSub) db.removeChannel(feedSub);
-  feedSub=watchFeed(()=>loadFeed());
+  watchFeed(()=>loadFeed());
+  if(isStaff){ loadAdmin(); watchOrders(()=>{ if(current==='admin')loadOrders(); }); }
 }
 $('signoutBtn').onclick=async()=>{ await signOut(); location.reload(); };
 
-/* ---------- FEED ---------- */
+/* FEED */
 async function loadFeed(){
   const posts=await getFeed();
-  if(!posts.length){ $('feedList').innerHTML='<div class="empty">No posts yet. Be the first to share something!</div>'; return; }
+  if(!posts.length){$('feedList').innerHTML='<div class="empty">No posts yet. Be the first to share something!</div>';return;}
   $('feedList').innerHTML=posts.map(p=>{
     const a=p.author||{}, ini=a.initials||initialsOf(a.name), col=a.color||colorFor(a.name);
-    const likes=p.post_likes||[], liked=likes.some(l=>l.user_id===me.id);
-    const cmts=p.comments||[];
+    const likes=p.post_likes||[], liked=likes.some(l=>l.user_id===me.id), cmts=p.comments||[];
     return `<div class="card"><div class="post">
       <div class="who"><div class="ava" style="background:${col}">${ini}</div>
-        <div><div class="name">${esc(a.name||'Someone')}</div><div class="meta">${esc(a.department||'Team')}</div></div></div>
-      <p>${tagify(esc(p.text))}</p>
-      ${p.media_emoji?`<div class="media">${p.media_emoji}</div>`:''}
+        <div><div class="name">${esc(a.name||'Someone')}</div><div class="meta">${esc(a.department||'Team')}</div></div>
+        ${isStaff?`<button class="del" data-delpost="${p.id}" title="Remove post">🗑</button>`:''}</div>
+      <p>${tagify(esc(p.text))}</p>${p.media_emoji?`<div class="media">${p.media_emoji}</div>`:''}
       <div class="acts">
         <button class="act ${liked?'on':''}" data-like="${p.id}"><span class="ic">${liked?'❤️':'🤍'}</span> ${likes.length}</button>
-        <button class="act"><span class="ic">💬</span> ${cmts.length}</button>
-        <button class="act"><span class="ic">↗️</span> Share</button></div>
+        <button class="act"><span class="ic">💬</span> ${cmts.length}</button><button class="act"><span class="ic">↗️</span> Share</button></div>
       <div class="comments">
-        ${cmts.map(c=>`<div class="cmt"><b>${esc(c.author?.name||'Someone')}:</b> ${esc(c.text)}</div>`).join('')}
+        ${cmts.map(c=>`<div class="cmt"><span><b>${esc(c.author?.name||'Someone')}:</b> ${esc(c.text)}</span>${isStaff?`<button class="del" data-delcmt="${c.id}">✕</button>`:''}</div>`).join('')}
         <div class="cmt-row"><input placeholder="Add a comment…" data-ci="${p.id}"><button class="mini" data-send="${p.id}">Send</button></div>
       </div></div></div>`;
   }).join('');
-  $('feedList').querySelectorAll('[data-like]').forEach(b=>b.onclick=async()=>{await toggleLike(b.dataset.like);loadFeed();});
-  $('feedList').querySelectorAll('[data-send]').forEach(b=>b.onclick=()=>sendComment(b.dataset.send));
-  $('feedList').querySelectorAll('[data-ci]').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')sendComment(i.dataset.ci);}));
+  const F=$('feedList');
+  F.querySelectorAll('[data-like]').forEach(b=>b.onclick=async()=>{await toggleLike(b.dataset.like);loadFeed();});
+  F.querySelectorAll('[data-send]').forEach(b=>b.onclick=()=>sendComment(b.dataset.send));
+  F.querySelectorAll('[data-ci]').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')sendComment(i.dataset.ci);}));
+  F.querySelectorAll('[data-delpost]').forEach(b=>b.onclick=async()=>{if(confirm('Remove this post?')){await deletePost(b.dataset.delpost);loadFeed();}});
+  F.querySelectorAll('[data-delcmt]').forEach(b=>b.onclick=async()=>{await deleteComment(b.dataset.delcmt);loadFeed();});
 }
-async function sendComment(pid){ const i=document.querySelector(`[data-ci="${pid}"]`); if(!i.value.trim())return; await addComment(pid,i.value.trim()); i.value=''; loadFeed(); }
-$('postBtn').onclick=async()=>{ const el=$('newPost'); if(!el.value.trim())return; el.disabled=true; await addPost(el.value.trim()); el.value=''; el.disabled=false; loadFeed(); loadStats(); };
+async function sendComment(pid){const i=document.querySelector(`[data-ci="${pid}"]`);if(!i.value.trim())return;await addComment(pid,i.value.trim());i.value='';loadFeed();}
+$('postBtn').onclick=async()=>{const el=$('newPost');if(!el.value.trim())return;el.disabled=true;await addPost(el.value.trim());el.value='';el.disabled=false;loadFeed();loadStats();};
 
-/* ---------- SHOP ---------- */
-async function loadMenu(){
-  menuCache=await getMenu();
-  renderMenu();
-}
+/* SHOP */
+async function loadMenu(){menuCache=await getMenu();renderMenu();}
 function renderMenu(){
-  $('menuList').innerHTML=menuCache.map((m,i)=>{
-    const q=cart[m.id]||0;
-    return `<div class="menu-item" style="${i?'border-top:1px solid var(--line)':''}">
-      <div class="pic">${m.emoji||'🍽️'}</div>
-      <div class="info"><b>${esc(m.name)}</b><small>${esc(m.description||'')}</small></div>
-      <div class="price">₹${m.price}</div>
-      ${q===0?`<button class="add" data-add="${m.id}">+</button>`
-        :`<div class="qty"><button data-q="${m.id}" data-d="-1">−</button><b>${q}</b><button data-q="${m.id}" data-d="1">+</button></div>`}
-    </div>`;
-  }).join('');
+  $('menuList').innerHTML=menuCache.map((m,i)=>{const q=cart[m.id]||0;
+    return `<div class="menu-item" style="${i?'border-top:1px solid var(--line)':''}"><div class="pic">${m.emoji||'🍽️'}</div>
+      <div class="info"><b>${esc(m.name)}</b><small>${esc(m.description||'')}</small></div><div class="price">₹${m.price}</div>
+      ${q===0?`<button class="add" data-add="${m.id}">+</button>`:`<div class="qty"><button data-q="${m.id}" data-d="-1">−</button><b>${q}</b><button data-q="${m.id}" data-d="1">+</button></div>`}</div>`;}).join('');
   $('menuList').querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{cart[b.dataset.add]=1;renderMenu();updateCart();});
-  $('menuList').querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{
-    const id=b.dataset.q; cart[id]=Math.max(0,(cart[id]||0)+ +b.dataset.d); if(!cart[id])delete cart[id]; renderMenu();updateCart();});
+  $('menuList').querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{const id=b.dataset.q;cart[id]=Math.max(0,(cart[id]||0)+ +b.dataset.d);if(!cart[id])delete cart[id];renderMenu();updateCart();});
   updateCart();
 }
 const cartList=()=>menuCache.filter(m=>cart[m.id]).map(m=>({id:m.id,name:m.name,price:m.price,qty:cart[m.id]}));
 const cartCount=()=>Object.values(cart).reduce((a,b)=>a+b,0);
 const cartSum=()=>cartList().reduce((s,i)=>s+i.price*i.qty,0);
 function updateCart(){
-  const c=cartCount(), bar=$('cartbar');
-  if(c>0&&current==='shop'){bar.classList.add('show');$('cartText').textContent=c+(c>1?' items':' item');$('cartTotal').textContent='Pay ₹'+cartSum()+' →';}
-  else bar.classList.remove('show');
+  const c=cartCount(),bar=$('cartbar');
+  if(c>0&&current==='shop'){bar.classList.add('show');$('cartText').textContent=c+(c>1?' items':' item');$('cartTotal').textContent='Pay ₹'+cartSum()+' →';}else bar.classList.remove('show');
   document.querySelectorAll('[data-tab="shop"] .badge').forEach(e=>e.remove());
   if(c>0){const btn=document.querySelector('[data-tab="shop"]');const s=document.createElement('span');s.className='badge';s.textContent=c;btn.appendChild(s);}
 }
 $('cartbar').onclick=openCheckout;
 function openCheckout(){
-  const total=cartSum(); const UPI='tuckshop@okhdfcbank', PAYEE='Office Tuck Shop';
+  const total=cartSum(),UPI='tuckshop@okhdfcbank',PAYEE='Office Tuck Shop';
   const link=`upi://pay?pa=${UPI}&pn=${encodeURIComponent(PAYEE)}&am=${total}&cu=INR&tn=Tuckshop%20order`;
-  $('sheetBody').innerHTML=`<div class="grab"></div><h3>Scan to pay ₹${total}</h3>
-    <div class="sub">Use any UPI app — Google Pay, PhonePe, Paytm.</div>
+  $('sheetBody').innerHTML=`<div class="grab"></div><h3>Scan to pay ₹${total}</h3><div class="sub">Use any UPI app — Google Pay, PhonePe, Paytm.</div>
     <div id="qr"></div><div class="upi-id">paying to <b>${PAYEE}</b> · ${UPI}</div>
-    <button class="btn" id="payOpen">Open UPI app</button>
-    <button class="btn ghost" style="margin-top:10px" id="payDone">I've paid — place order</button>`;
-  $('sheet').classList.add('open'); $('qr').innerHTML='';
-  try{ new QRCode($('qr'),{text:link,width:184,height:184,colorDark:'#211B2E',colorLight:'#fff'}); }
-  catch(e){ $('qr').innerHTML='<div style="padding:30px;color:#6B6480;font-size:13px">UPI: '+UPI+'</div>'; }
-  $('payOpen').onclick=()=>{ try{location.href=link;}catch(e){} };
-  $('payDone').onclick=submitOrder;
+    <button class="btn" id="payOpen">Open UPI app</button><button class="btn ghost" style="margin-top:10px" id="payDone">I've paid — place order</button>`;
+  $('sheet').classList.add('open');$('qr').innerHTML='';
+  try{new QRCode($('qr'),{text:link,width:184,height:184,colorDark:'#211B2E',colorLight:'#fff'});}catch(e){$('qr').innerHTML='<div style="padding:30px;color:#6B6480;font-size:13px">UPI: '+UPI+'</div>';}
+  $('payOpen').onclick=()=>{try{location.href=link;}catch(e){}};$('payDone').onclick=submitOrder;
 }
 async function submitOrder(){
-  const total=cartSum(), items=cartList();
-  const {error}=await placeOrder(items);
-  if(error){ $('sheetBody').innerHTML='<div class="grab"></div><div class="done"><h3 style="text-align:center">Could not place order</h3><div class="sub" style="text-align:center">'+esc(error.message)+'</div><button class="btn" id="cl">Close</button></div>'; $('cl').onclick=()=>$('sheet').classList.remove('open'); return; }
-  cart={}; renderMenu(); updateCart(); loadStats();
-  $('sheetBody').innerHTML=`<div class="grab"></div><div class="done"><div class="tick">✓</div>
-    <h3 style="text-align:center">Order placed</h3>
-    <div class="sub" style="text-align:center">The tuck shop got your ₹${total} order. You'll get a ping when it's ready.</div>
-    <button class="btn" id="cl">Done</button></div>`;
+  const total=cartSum(),items=cartList();const {error}=await placeOrder(items);
+  if(error){$('sheetBody').innerHTML='<div class="grab"></div><div class="done"><h3 style="text-align:center">Could not place order</h3><div class="sub" style="text-align:center">'+esc(error.message)+'</div><button class="btn" id="cl">Close</button></div>';$('cl').onclick=()=>$('sheet').classList.remove('open');return;}
+  cart={};renderMenu();updateCart();loadStats();
+  $('sheetBody').innerHTML=`<div class="grab"></div><div class="done"><div class="tick">✓</div><h3 style="text-align:center">Order placed</h3><div class="sub" style="text-align:center">The tuck shop got your ₹${total} order. You'll get a ping when it's ready.</div><button class="btn" id="cl">Done</button></div>`;
   $('cl').onclick=()=>$('sheet').classList.remove('open');
 }
 $('sheet').addEventListener('click',e=>{if(e.target.id==='sheet')$('sheet').classList.remove('open');});
 
-/* ---------- OUTINGS ---------- */
+/* OUTINGS */
 async function loadOutings(){
   const outs=await getOutings();
-  if(!outs.length){ $('outingList').innerHTML='<div class="empty">No plans yet. Start one above!</div>'; return; }
+  if(!outs.length){$('outingList').innerHTML='<div class="empty">No plans yet. Start one above!</div>';return;}
   $('outingList').innerHTML=outs.map(o=>{
-    const a=o.author||{}, ini=a.initials||initialsOf(a.name), col=a.color||colorFor(a.name);
-    const joins=o.outing_joins||[], joined=joins.some(j=>j.user_id===me.id);
-    return `<div class="card"><div class="post">
-      <div class="who"><div class="ava" style="background:${col}">${ini}</div>
-        <div><div class="name">${esc(a.name||'Someone')}</div><div class="meta">${esc(a.department||'Team')}</div></div></div>
-      ${o.pill?`<span class="pill">${esc(o.pill)}</span>`:''}
-      <p>${tagify(esc(o.text))}</p>
-      <div class="going"><div class="stack">
-        ${joins.slice(0,5).map(j=>{const pr=j.profiles||{};return `<div class="ava" style="background:${pr.color||'#6C4DF2'}">${pr.initials||'··'}</div>`;}).join('')}
-      </div><small>${joins.length} going</small></div>
-      <button class="join ${joined?'in':''}" data-join="${o.id}">${joined?"✓ You're in":'Join them'}</button>
-    </div></div>`;
+    const a=o.author||{},ini=a.initials||initialsOf(a.name),col=a.color||colorFor(a.name);
+    const joins=o.outing_joins||[],joined=joins.some(j=>j.user_id===me.id);
+    return `<div class="card"><div class="post"><div class="who"><div class="ava" style="background:${col}">${ini}</div>
+      <div><div class="name">${esc(a.name||'Someone')}</div><div class="meta">${esc(a.department||'Team')}</div></div>
+      ${isStaff?`<button class="del" data-delout="${o.id}">🗑</button>`:''}</div>
+      ${o.pill?`<span class="pill">${esc(o.pill)}</span>`:''}<p>${tagify(esc(o.text))}</p>
+      <div class="going"><div class="stack">${joins.slice(0,5).map(j=>{const pr=j.profiles||{};return `<div class="ava" style="background:${pr.color||'#6C4DF2'}">${pr.initials||'··'}</div>`;}).join('')}</div><small>${joins.length} going</small></div>
+      <button class="join ${joined?'in':''}" data-join="${o.id}">${joined?"✓ You're in":'Join them'}</button></div></div>`;
   }).join('');
   $('outingList').querySelectorAll('[data-join]').forEach(b=>b.onclick=async()=>{await toggleJoin(b.dataset.join);loadOutings();});
+  $('outingList').querySelectorAll('[data-delout]').forEach(b=>b.onclick=async()=>{if(confirm('Remove this plan?')){await deleteOuting(b.dataset.delout);loadOutings();}});
 }
-$('outingBtn').onclick=async()=>{ const el=$('newOuting'); if(!el.value.trim())return; el.disabled=true; await addOuting(el.value.trim(),'🗓️ New plan'); el.value=''; el.disabled=false; loadOutings(); };
+$('outingBtn').onclick=async()=>{const el=$('newOuting');if(!el.value.trim())return;el.disabled=true;await addOuting(el.value.trim(),'🗓️ New plan');el.value='';el.disabled=false;loadOutings();};
 
-/* ---------- PLAY ---------- */
+/* PLAY */
 async function loadLeaderboard(){
   const rows=await getLeaderboard();
   $('leaderboard').innerHTML=(rows.length?rows:[{name:'No games yet',wins:0}]).map((r,i)=>
     `<div class="lead-row"><span class="rk">${i+1}</span><span class="name">${esc(r.name)}${r.name===myProfile?.name?' ⭐':''}</span><span class="pts">${r.wins||0} wins</span></div>`).join('');
 }
-$('openC4').onclick=startGame;
-$('newGame').onclick=startGame;
-$('leaveGame').onclick=()=>{ if(gameSub)db.removeChannel(gameSub); $('gameScreen').classList.add('hidden'); $('gameLobby').classList.remove('hidden'); loadLeaderboard(); };
-async function startGame(){
-  $('gameLobby').classList.add('hidden'); $('gameScreen').classList.remove('hidden');
-  $('winBanner').classList.add('hidden');
-  game=await findOrCreateGame();
+document.querySelectorAll('[data-game]').forEach(c=>c.onclick=()=>openGame(c.dataset.game));
+document.querySelectorAll('[data-leave]').forEach(b=>b.onclick=leaveGame);
+document.querySelector('[data-newc4]').onclick=()=>startLive('connect4');
+document.querySelector('[data-newttt]').onclick=()=>startLive('ttt');
+document.querySelector('[data-newmem]').onclick=newMemory;
+function showSub(id){['gameLobby','gameC4','gameTTT','gameMem'].forEach(x=>$(x).classList.add('hidden'));$(id).classList.remove('hidden');}
+function leaveGame(){ if(gameSub){db.removeChannel(gameSub);gameSub=null;} showSub('gameLobby'); loadLeaderboard(); }
+function openGame(type){ if(type==='memory'){showSub('gameMem');newMemory();} else startLive(type); }
+
+async function startLive(type){
+  showSub(type==='connect4'?'gameC4':'gameTTT');
+  if(gameSub){db.removeChannel(gameSub);gameSub=null;}
+  game=await findOrCreateGame(type);
   myNum=game.player1_id===me.id?1:2;
-  if(gameSub)db.removeChannel(gameSub);
-  gameSub=watchGame(game.id,g=>{game=g;renderGame();});
-  renderGame();
+  gameSub=watchGame(game.id,g=>{game=g;type==='connect4'?renderC4():renderTTT();});
+  type==='connect4'?renderC4():renderTTT();
 }
-function renderGame(){
-  const b=$('board'); b.innerHTML='';
-  for(let r=0;r<6;r++)for(let c=0;c<7;c++){
-    const v=game.board[r][c], d=document.createElement('div');
-    d.className='cell'+(v===1?' r':v===2?' y':'');
-    d.onclick=()=>play(c); b.appendChild(d);
-  }
-  const t=$('turn'), wb=$('winBanner');
-  if(game.status==='waiting'){ t.innerHTML='⏳ Waiting for an opponent to join…'; wb.classList.add('hidden'); }
-  else if(game.status==='finished'){
-    wb.classList.remove('hidden');
-    wb.textContent=game.winner_id===me.id?'🎉 You win!':'😅 You lost — rematch?';
-    t.innerHTML='';
-  } else {
-    const mine=game.turn===myNum;
-    t.innerHTML=`<span class="dot" style="background:${myNum===1?'var(--red)':'var(--yellow)'}"></span> ${mine?'Your turn':"Opponent's turn"}`;
-    wb.classList.add('hidden');
-  }
+function statusText(t,who){
+  const tu=$(t.turnEl),wb=$(t.winEl);
+  if(game.status==='waiting'){tu.innerHTML='⏳ Waiting for an opponent to join…';wb.classList.add('hidden');}
+  else if(game.status==='finished'){wb.classList.remove('hidden');wb.textContent=game.winner_id?(game.winner_id===me.id?'🎉 You win!':'😅 You lost'):'🤝 Draw';tu.innerHTML='';}
+  else{const mine=game.turn===myNum;tu.innerHTML=`<span class="dot" style="background:${who}"></span> ${mine?'Your turn':"Opponent's turn"}`;wb.classList.add('hidden');}
 }
-async function play(col){
-  if(!game||game.status!=='playing'||game.turn!==myNum)return;
-  game=await dropPiece(game,col,me.id); renderGame();
+function renderC4(){
+  const b=$('c4board');b.innerHTML='';
+  for(let r=0;r<6;r++)for(let c=0;c<7;c++){const v=game.board[r][c],d=document.createElement('div');d.className='cell'+(v===1?' r':v===2?' y':'');d.onclick=()=>playC4(c);b.appendChild(d);}
+  statusText({turnEl:'c4turn',winEl:'c4win'}, myNum===1?'var(--red)':'var(--yellow)');
+}
+async function playC4(col){ if(!game||game.status!=='playing'||game.turn!==myNum)return; game=await dropConnect4(game,col,me.id); renderC4(); }
+function renderTTT(){
+  const b=$('tttboard');b.innerHTML='';const flat=game.board.flat();
+  flat.forEach((v,i)=>{const d=document.createElement('div');d.className='tcell'+(v===1?' x':v===2?' o':'');d.textContent=v===1?'✕':v===2?'◯':'';d.onclick=()=>playTTT(i);b.appendChild(d);});
+  statusText({turnEl:'tttturn',winEl:'tttwin'}, myNum===1?'var(--red)':'var(--amber)');
+}
+async function playTTT(i){ if(!game||game.status!=='playing'||game.turn!==myNum)return; game=await placeTTT(game,i,me.id); renderTTT(); }
+
+/* MEMORY (solo, local) */
+let mem={cards:[],flipped:[],moves:0,lock:false};
+function newMemory(){
+  const set=['🍕','🎮','☕','🏏','🎸','🚀','🐱','🍩'];
+  const cards=[...set,...set].map((e,i)=>({i,e,up:false,done:false})).sort(()=>Math.random()-0.5);
+  mem={cards,flipped:[],moves:0,lock:false}; $('memWin').classList.add('hidden'); $('memMoves').textContent='Moves: 0'; renderMem();
+}
+function renderMem(){
+  const b=$('memBoard');b.innerHTML='';
+  mem.cards.forEach((c,idx)=>{const d=document.createElement('div');d.className='mcard'+(c.up?' up':'')+(c.done?' done':'');d.textContent=(c.up||c.done)?c.e:'?';d.onclick=()=>flipMem(idx);b.appendChild(d);});
+}
+function flipMem(idx){
+  const c=mem.cards[idx]; if(mem.lock||c.up||c.done)return;
+  c.up=true; mem.flipped.push(idx); renderMem();
+  if(mem.flipped.length===2){
+    mem.moves++; $('memMoves').textContent='Moves: '+mem.moves; mem.lock=true;
+    const [a,b]=mem.flipped;
+    if(mem.cards[a].e===mem.cards[b].e){ mem.cards[a].done=mem.cards[b].done=true; mem.flipped=[]; mem.lock=false; renderMem();
+      if(mem.cards.every(x=>x.done)){$('memWin').classList.remove('hidden');$('memWin').textContent=`🎉 Solved in ${mem.moves} moves!`;} }
+    else setTimeout(()=>{mem.cards[a].up=mem.cards[b].up=false;mem.flipped=[];mem.lock=false;renderMem();},700);
+  }
 }
 
-/* ---------- STATS ---------- */
+/* STATS */
 async function loadStats(){
   const [{count:posts},{count:orders},{data:lb}]=await Promise.all([
     db.from('posts').select('*',{count:'exact',head:true}).eq('author_id',me.id),
     db.from('orders').select('*',{count:'exact',head:true}).eq('user_id',me.id),
-    db.from('leaderboard').select('wins').eq('id',me.id).maybeSingle(),
-  ]);
-  $('sPosts').textContent=posts||0; $('sOrders').textContent=orders||0; $('sWins').textContent=lb?.wins||0;
+    db.from('leaderboard').select('wins').eq('id',me.id).maybeSingle()]);
+  $('sPosts').textContent=posts||0;$('sOrders').textContent=orders||0;$('sWins').textContent=lb?.wins||0;
 }
 
-/* ---------- NAV ---------- */
+/* ADMIN */
+async function loadAdmin(){ await Promise.all([loadOrders(),loadAdminMenu(),loadUsers()]); }
+async function loadOrders(){
+  const orders=await getOpenOrders();
+  if(!orders.length){$('admOrders').innerHTML='<div class="empty">No open orders right now.</div>';return;}
+  const next={placed:'preparing',preparing:'ready',ready:'collected'};
+  const label={placed:'Start preparing',preparing:'Mark ready',ready:'Mark collected'};
+  $('admOrders').innerHTML=orders.map(o=>{
+    const items=(o.order_items||[]).map(i=>`${i.qty}× ${esc(i.name)}`).join(', ');
+    return `<div class="adm"><div class="top"><b>${esc(o.user?.name||'Someone')}</b><span class="status-pill s-${o.status}">${o.status}</span><span class="when">₹${o.total}</span></div>
+      <div class="items">${items||'—'}</div>
+      <button class="abtn go" data-adv="${o.id}" data-to="${next[o.status]}">${label[o.status]}</button></div>`;
+  }).join('');
+  $('admOrders').querySelectorAll('[data-adv]').forEach(b=>b.onclick=async()=>{await setOrderStatus(b.dataset.adv,b.dataset.to);loadOrders();});
+}
+$('inviteBtn').onclick=async()=>{
+  const email=$('inviteEmail').value.trim();if(!email)return;
+  $('inviteMsg').textContent='Sending invite…';
+  const err=await inviteUser(email);
+  $('inviteMsg').textContent=err?('Hmm: '+err.message):'✓ Sign-in link sent to '+email+'. (If nothing arrives, the free email limit may be reached — set up Resend.)';
+  if(!err)$('inviteEmail').value='';
+};
+async function loadAdminMenu(){
+  const items=await getMenuAll();
+  $('admMenu').innerHTML=items.map(m=>`<div class="adm"><div class="row"><span style="font-size:20px">${m.emoji||'🍽️'}</span>
+    <div class="grow"><div class="nm">${esc(m.name)} <span style="color:var(--ink-soft);font-weight:600">₹${m.price}</span></div><div class="dp">${m.available?'available':'sold out'}</div></div>
+    <button class="abtn" data-avl="${m.id}" data-to="${m.available?'false':'true'}">${m.available?'Sold out':'Restock'}</button>
+    <button class="abtn danger" data-delmenu="${m.id}">Delete</button></div></div>`).join('');
+  $('admMenu').querySelectorAll('[data-avl]').forEach(b=>b.onclick=async()=>{await setMenuAvailable(b.dataset.avl,b.dataset.to==='true');loadAdminMenu();loadMenu();});
+  $('admMenu').querySelectorAll('[data-delmenu]').forEach(b=>b.onclick=async()=>{if(confirm('Delete item?')){await deleteMenuItem(b.dataset.delmenu);loadAdminMenu();loadMenu();}});
+}
+$('miAdd').onclick=async()=>{const n=$('miName').value.trim();if(!n)return;await addMenuItem(n,$('miPrice').value,$('miEmoji').value,'');$('miName').value=$('miPrice').value=$('miEmoji').value='';loadAdminMenu();loadMenu();};
+async function loadUsers(){
+  const users=await getAllUsers();
+  $('admUsers').innerHTML=users.map(u=>`<div class="adm"><div class="row"><div class="ava" style="width:34px;height:34px;font-size:12px;background:${u.color||'#6C4DF2'}">${u.initials||'··'}</div>
+    <div class="grow"><div class="nm">${esc(u.name)} ${u.is_staff?'<span class="tag-staff">staff</span>':''} ${u.blocked?'<span class="tag-block">blocked</span>':''}</div><div class="dp">${esc(u.department||'Team')}</div></div>
+    ${u.id===me.id?'<span class="dp">you</span>':`<button class="abtn" data-block="${u.id}" data-to="${u.blocked?'false':'true'}">${u.blocked?'Unblock':'Block'}</button><button class="abtn danger" data-remove="${u.id}">Remove</button>`}</div></div>`).join('');
+  $('admUsers').querySelectorAll('[data-block]').forEach(b=>b.onclick=async()=>{await setBlocked(b.dataset.block,b.dataset.to==='true');loadUsers();});
+  $('admUsers').querySelectorAll('[data-remove]').forEach(b=>b.onclick=async()=>{if(confirm('Remove this user and their posts/comments/outings?')){await removeUser(b.dataset.remove);loadUsers();loadFeed();}});
+}
+
+/* NAV */
 $('nav').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
   current=btn.dataset.tab;
   document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));
   $('tab-'+current).classList.remove('hidden');
   $('nav').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));
   $('tab-'+current).scrollTop=0; updateCart();
+  if(current==='admin'&&isStaff)loadAdmin();
 });
 </script>
 </body>
