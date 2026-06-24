@@ -26,16 +26,45 @@ export async function signInPassword(email, password) {
 export async function signOut()     { await db.auth.signOut(); }
 export async function currentUser() { const { data } = await db.auth.getUser(); return data.user; }
 
+const COLORS = ['#6C4DF2','#13C2A3','#FFB23E','#FF6B6B','#4A32C0','#0EA5E9'];
+const inits = n => (n || '?').trim().slice(0,2).toUpperCase();
+const colr  = n => COLORS[((n || '').charCodeAt(0) || 0) % COLORS.length];
+
+// Make sure the logged-in user has a profile row (creates one if missing).
+export async function ensureProfile(user) {
+  let { data } = await db.from('profiles').select('*').eq('id', user.id).maybeSingle();
+  if (!data) {
+    const name = (user.email || 'user').split('@')[0];
+    await db.from('profiles').upsert({ id: user.id, name, initials: inits(name), color: colr(name) });
+    ({ data } = await db.from('profiles').select('*').eq('id', user.id).maybeSingle());
+  }
+  return data;
+}
+export async function updateProfile(fields) {
+  const user = await currentUser();
+  const { error } = await db.from('profiles').update(fields).eq('id', user.id);
+  return error;
+}
+export async function uploadAvatar(file) {
+  const user = await currentUser();
+  const path = `${user.id}/${Date.now()}`;
+  const { error } = await db.storage.from('avatars').upload(path, file, { upsert: true, contentType: file.type });
+  if (error) return { error };
+  const { data } = db.storage.from('avatars').getPublicUrl(path);
+  return { url: data.publicUrl };
+}
+
 // ---------- FEED ----------------------------------------------------
 export async function getFeed() {
   const { data } = await db.from('posts')
-    .select('*, author:profiles(name,initials,color,department), comments(id,text,author:profiles(name)), post_likes(user_id)')
+    .select('*, author:profiles(name,initials,color,department,avatar_url), comments(id,text,author:profiles(name)), post_likes(user_id)')
     .order('created_at', { ascending: false });
   return data ?? [];
 }
 export async function addPost(text, mediaEmoji = null) {
   const user = await currentUser();
-  return db.from('posts').insert({ author_id: user.id, text, media_emoji: mediaEmoji });
+  const { error } = await db.from('posts').insert({ author_id: user.id, text, media_emoji: mediaEmoji });
+  return error;                          // null = success
 }
 export async function toggleLike(postId) {
   const user = await currentUser();
@@ -45,7 +74,8 @@ export async function toggleLike(postId) {
 }
 export async function addComment(postId, text) {
   const user = await currentUser();
-  return db.from('comments').insert({ post_id: postId, author_id: user.id, text });
+  const { error } = await db.from('comments').insert({ post_id: postId, author_id: user.id, text });
+  return error;
 }
 export function watchFeed(onChange) {
   return db.channel('feed')
@@ -72,13 +102,14 @@ export async function placeOrder(cart) {
 // ---------- OUTINGS -------------------------------------------------
 export async function getOutings() {
   const { data } = await db.from('outings')
-    .select('*, author:profiles(name,initials,color,department), outing_joins(user_id, profiles(initials,color))')
+    .select('*, author:profiles(name,initials,color,department,avatar_url), outing_joins(user_id, profiles(initials,color,avatar_url))')
     .order('created_at', { ascending: false });
   return data ?? [];
 }
 export async function addOuting(text, pill) {
   const user = await currentUser();
-  return db.from('outings').insert({ author_id: user.id, text, pill });
+  const { error } = await db.from('outings').insert({ author_id: user.id, text, pill });
+  return error;
 }
 export async function toggleJoin(outingId) {
   const user = await currentUser();
@@ -110,7 +141,6 @@ export function watchGame(gameId, onChange) {
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'games', filter: 'id=eq.' + gameId }, p => onChange(p.new))
     .subscribe();
 }
-// Connect Four move
 export async function dropConnect4(game, col, me) {
   const player = game.player1_id === me ? 1 : 2;
   if (game.turn !== player || game.status !== 'playing') return game;
@@ -126,7 +156,6 @@ export async function dropConnect4(game, col, me) {
   }
   return game;
 }
-// Tic-Tac-Toe move
 export async function placeTTT(game, idx, me) {
   const player = game.player1_id === me ? 1 : 2;
   if (game.turn !== player || game.status !== 'playing') return game;
@@ -134,16 +163,12 @@ export async function placeTTT(game, idx, me) {
   if (game.board[r][c] !== 0) return game;
   const board = game.board.map(x => [...x]);
   board[r][c] = player;
-  const won = win3(board, player);
-  const full = board.flat().every(v => v !== 0);
+  const won = win3(board, player), full = board.flat().every(v => v !== 0);
   const upd = { board, turn: player === 1 ? 2 : 1, status: (won || full) ? 'finished' : 'playing', winner_id: won ? me : null };
   const { data } = await db.from('games').update(upd).eq('id', game.id).select().single();
   return data;
 }
-export async function getLeaderboard() {
-  const { data } = await db.from('leaderboard').select('*').limit(10);
-  return data ?? [];
-}
+export async function getLeaderboard() { const { data } = await db.from('leaderboard').select('*').limit(10); return data ?? []; }
 function win4(b, r, c, p) {
   for (const [dr, dc] of [[0,1],[1,0],[1,1],[1,-1]]) {
     let n = 1;
@@ -159,12 +184,10 @@ function win3(b, p) {
 }
 
 // ---------- ADMIN ---------------------------------------------------
-// Invite: emails a sign-in link (works because the domain is allowed).
 export async function inviteUser(email) {
   if (!emailAllowed(email)) return { message: 'That email is not on an allowed company domain.' };
   return await signInLink(email);
 }
-// Orders queue (everything not yet collected)
 export async function getOpenOrders() {
   const { data } = await db.from('orders')
     .select('*, user:profiles(name,initials,color), order_items(name,qty,price_each)')
@@ -175,9 +198,8 @@ export async function setOrderStatus(orderId, status) { return db.from('orders')
 export function watchOrders(onChange) {
   return db.channel('orders-admin').on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, onChange).subscribe();
 }
-// People
 export async function getAllUsers() {
-  const { data } = await db.from('profiles').select('id,name,department,initials,color,is_staff,blocked').order('name');
+  const { data } = await db.from('profiles').select('id,name,department,initials,color,avatar_url,is_staff,blocked').order('name');
   return data ?? [];
 }
 export async function setBlocked(userId, blocked) { return db.from('profiles').update({ blocked }).eq('id', userId); }
@@ -187,11 +209,9 @@ export async function removeUser(userId) {
   await db.from('outings').delete().eq('author_id', userId);
   return db.from('profiles').delete().eq('id', userId);
 }
-// Moderation
 export async function deletePost(id)    { return db.from('posts').delete().eq('id', id); }
 export async function deleteComment(id) { return db.from('comments').delete().eq('id', id); }
 export async function deleteOuting(id)  { return db.from('outings').delete().eq('id', id); }
-// Menu management
 export async function getMenuAll() { const { data } = await db.from('menu_items').select('*').order('name'); return data ?? []; }
 export async function addMenuItem(name, price, emoji, description) {
   return db.from('menu_items').insert({ name, price: parseInt(price) || 0, emoji: emoji || '🍽️', description: description || '' });
