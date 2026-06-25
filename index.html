@@ -183,6 +183,35 @@
   .edit-ava{position:absolute;right:-3px;bottom:-3px;width:34px;height:34px;border-radius:50%;border:3px solid var(--surface);background:var(--violet);color:#fff;font-size:15px;display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);font-family:inherit}
   .me-name{font-size:20px;font-weight:800;color:var(--ink)}
   .me-role{font-size:13.5px;color:var(--ink-soft);margin-top:2px}
+  .ig-head{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 12px}
+  .ig-handle{font-size:17px;font-weight:800;color:var(--ink)}
+  .ig-menu{background:none;border:none;font-size:22px;color:var(--ink);cursor:pointer;line-height:1;padding:0 4px}
+  .ig-top{display:flex;align-items:center;gap:18px;padding:2px 4px 10px}
+  .ig-stats{flex:1;display:flex;text-align:center}
+  .igs{flex:1;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0}
+  .igs b{display:block;font-size:18px;font-weight:800;color:var(--ink)}
+  .igs small{font-size:12px;color:var(--ink-soft)}
+  .ig-bio{padding:0 4px}
+  .ig-name{font-size:14.5px;font-weight:800;color:var(--ink)}
+  .ig-role{font-size:13px;color:var(--ink-soft);margin-top:1px}
+  .ig-bioText{font-size:13px;line-height:1.5;margin:5px 0 0;color:var(--ink);white-space:pre-wrap}
+  .ig-actions{display:flex;gap:8px;padding:12px 4px 4px}
+  .ig-btn{flex:1;text-align:center;font-size:13px;font-weight:700;padding:8px;border-radius:10px;background:var(--surface-2);color:var(--ink);border:none;cursor:pointer;font-family:inherit}
+  .ig-hl{display:flex;gap:18px;padding:14px 4px;overflow-x:auto}
+  .ig-hl .hl{display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:none;cursor:pointer;font-family:inherit;flex:none}
+  .ig-hl .hl>div{width:54px;height:54px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;font-size:22px}
+  .ig-hl .hl small{font-size:11px;color:var(--ink-soft)}
+  .ig-tabs{display:flex;border-top:1px solid var(--line);margin-top:4px}
+  .ig-tab{flex:1;background:none;border:none;padding:9px;font-size:18px;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent}
+  .ig-tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+  .ig-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin-top:3px}
+  .ig-grid .tile{position:relative;aspect-ratio:1;background:var(--surface-2);border:none;cursor:pointer;overflow:hidden;padding:0;display:grid;place-items:center}
+  .ig-grid .tile img,.ig-grid .tile video{width:100%;height:100%;object-fit:cover}
+  .tile-ic{position:absolute;top:5px;right:6px;color:#fff;font-size:12px;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+  .tile-emoji{font-size:30px}
+  .tile-text{font-size:11px;color:var(--ink-soft);padding:8px;text-align:center;line-height:1.35;overflow:hidden}
+  .menu-row{display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--line);padding:14px 4px;font-size:14.5px;color:var(--ink);cursor:pointer;font-family:inherit}
+  .menu-row.danger{color:var(--coral)}
 </style>
 </head>
 <body>
@@ -263,20 +292,26 @@
     </div>
 
     <div class="screen hidden" id="tab-me">
-      <div class="prof">
-        <div class="ava-wrap">
-          <div class="ava" id="meAvaBig">··</div>
-          <button class="edit-ava" id="changePhoto" aria-label="Change photo" title="Change photo">✎</button>
-        </div>
+      <div class="ig-head"><div class="ig-handle" id="meHandle">—</div><button class="ig-menu" id="meMenu" aria-label="Menu">☰</button></div>
+      <div class="ig-top">
+        <div class="ava-wrap"><div class="ava" id="meAvaBig">··</div><button class="edit-ava" id="changePhoto" aria-label="Change photo" title="Change photo">✎</button></div>
         <input type="file" id="photoInput" accept="image/*" hidden/>
-        <div class="me-name" id="meNameShow">—</div>
-        <div class="me-role" id="meRoleShow">—</div>
+        <div class="ig-stats">
+          <button class="igs" id="statPosts"><b id="sPosts">0</b><small>Posts</small></button>
+          <button class="igs" id="statOrders"><b id="sOrders">0</b><small>Orders</small></button>
+          <button class="igs" id="statWins"><b id="sWins">0</b><small>Wins</small></button>
+        </div>
       </div>
-      <div class="stats"><div class="stat"><b id="sPosts">0</b><small>POSTS</small></div><div class="stat"><b id="sOrders">0</b><small>ORDERS</small></div><div class="stat"><b id="sWins">0</b><small>WINS</small></div></div>
-      <button class="btn" id="openEdit">Update profile</button>
-      <button class="abtn" id="browsePeople" style="width:100%;margin-top:12px;padding:13px;font-size:14px">Browse colleagues</button>
-      <button class="signout" id="signoutBtn">Log out</button>
-      <div id="profMsg" style="text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:10px"></div>
+      <div class="ig-bio"><div class="ig-name" id="meNameShow">—</div><div class="ig-role" id="meRoleShow">—</div><p class="ig-bioText" id="meBioShow"></p></div>
+      <div class="ig-actions"><button class="ig-btn" id="openEdit">Edit profile</button><button class="ig-btn" id="shareProfile">Share profile</button></div>
+      <div class="ig-hl">
+        <button class="hl" id="hlOutings"><div>🎉</div><small>Outings</small></button>
+        <button class="hl" id="hlOrders"><div>🧾</div><small>Orders</small></button>
+        <button class="hl" id="hlBoard"><div>🏆</div><small>Leaderboard</small></button>
+      </div>
+      <div class="ig-tabs"><button class="ig-tab on" id="tabAll">▦</button><button class="ig-tab" id="tabReels">🎬</button></div>
+      <div class="ig-grid" id="meGrid"></div>
+      <div id="profMsg" style="text-align:center;font-size:12.5px;color:var(--ink-soft);margin:12px 0"></div>
     </div>
 
     <div class="screen hidden" id="tab-admin">
@@ -313,12 +348,13 @@ import { db, signInLink, signInPassword, emailAllowed, signOut, currentUser, ens
   getMenu, placeOrder, getMyOrders, cancelOrder, getOutings, addOuting, toggleJoin, deleteOuting, setReaction,
   findOrCreateGame, watchGame, dropConnect4, placeTTT, getLeaderboard, createInvite, acceptInvite, declineInvite,
   inviteUser, getOpenOrders, setOrderStatus, watchOrders, getAllUsers, setBlocked, removeUser,
-  getMenuAll, addMenuItem, setMenuAvailable, deleteMenuItem, getProfile, getPeople } from './db.js';
+  getMenuAll, addMenuItem, setMenuAvailable, deleteMenuItem, getProfile, getPeople, getUserPosts } from './db.js';
 
 const $=id=>document.getElementById(id);
 let me=null, myProfile=null, isStaff=false, current='feed';
 let menuCache=[], cart={};
 let game=null, myNum=null, gameSub=null, challengeCount=0;
+let _myPosts=[], _gridMode='all';
 const REACTS=[['like','❤️'],['celebrate','🎉'],['support','👏'],['funny','😂']];
 function fmtWhen(ts){const d=new Date(ts);if(isNaN(d))return '';return d.toLocaleString([], {weekday:'short',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});}
 const COLORS=['#6C4DF2','#13C2A3','#FFB23E','#FF6B6B','#4A32C0','#0EA5E9'];
@@ -352,12 +388,12 @@ async function onLogin(user){
   setAva($('meAva1'),prof); setAva($('meAva2'),prof); setAva($('meAvaBig'),prof);
   refreshMeHeader();
   $('navAdmin').style.display=isStaff?'flex':'none';
-  await Promise.all([loadFeed(),loadMenu(),loadOutings(),loadLeaderboard(),loadStats()]);
+  await Promise.all([loadFeed(),loadMenu(),loadOutings(),loadLeaderboard(),loadStats(),loadMeGrid()]);
   watchFeed(()=>loadFeed()); startPresence(); watchChallenges();
   db.channel('myorders:'+me.id).on('postgres_changes',{event:'*',schema:'public',table:'orders',filter:'user_id=eq.'+me.id},()=>{if(current==='shop')loadMyOrders();}).subscribe();
   if(isStaff){ loadAdmin(); watchOrders(()=>{ if(current==='admin')loadOrders(); }); }
 }
-$('signoutBtn').onclick=async()=>{ await signOut(); location.reload(); };
+async function doSignOut(){ await signOut(); location.reload(); }
 $('changePhoto').onclick=()=>$('photoInput').click();
 $('photoInput').onchange=async(e)=>{
   const file=e.target.files[0]; if(!file)return;
@@ -369,7 +405,7 @@ $('photoInput').onchange=async(e)=>{
   myProfile.avatar_url=url; setAva($('meAvaBig'),myProfile); setAva($('meAva1'),myProfile); setAva($('meAva2'),myProfile);
   $('profMsg').textContent='✓ Photo updated'; loadFeed(); loadOutings();
 };
-function refreshMeHeader(){const p=myProfile||{};$('meNameShow').textContent=p.name||'—';$('meRoleShow').textContent=[p.designation,p.department].filter(Boolean).join(' · ')||'Team';}
+function refreshMeHeader(){const p=myProfile||{};$('meNameShow').textContent=p.name||'—';$('meRoleShow').textContent=[p.designation,p.department].filter(Boolean).join(' · ')||'Team';$('meHandle').textContent=p.name||'Me';const b=$('meBioShow');if(b){b.textContent=p.bio||'';b.style.display=p.bio?'block':'none';}}
 $('openEdit').onclick=openEditProfile;
 function openEditProfile(){
   const p=myProfile||{};
@@ -409,7 +445,6 @@ async function openProfile(userId){
   $('closeProf').onclick=()=>$('sheet').classList.remove('open');
 }
 let _people=[];
-$('browsePeople').onclick=openDirectory;
 async function openDirectory(){
   _people=await getPeople();
   $('sheet').classList.add('open');
@@ -427,6 +462,62 @@ function renderDir(q){
   $('dirList').querySelectorAll('[data-dirp]').forEach(b=>b.onclick=()=>openProfile(b.dataset.dirp));
 }
 function setNavBadge(tab,n){const btn=document.querySelector('.nav [data-tab="'+tab+'"]');if(!btn)return;btn.querySelectorAll('.badge').forEach(e=>e.remove());if(n>0){const s=document.createElement('span');s.className='badge';s.textContent=n;btn.appendChild(s);}}
+function goTab(t){const b=document.querySelector('.nav [data-tab="'+t+'"]');if(b)b.click();}
+$('meMenu').onclick=()=>{
+  $('sheet').classList.add('open');
+  $('sheetBody').innerHTML=`<div class="grab"></div><h3>Menu</h3><button class="menu-row" id="mUpd">Update profile</button><button class="menu-row" id="mPpl">Browse colleagues</button><button class="menu-row danger" id="mOut">Log out</button>`;
+  $('mUpd').onclick=()=>{$('sheet').classList.remove('open');openEditProfile();};
+  $('mPpl').onclick=()=>{$('sheet').classList.remove('open');openDirectory();};
+  $('mOut').onclick=doSignOut;
+};
+$('statPosts').onclick=()=>setGridTab('all');
+$('statOrders').onclick=openOrderHistory;
+$('statWins').onclick=()=>goTab('play');
+$('hlOutings').onclick=()=>goTab('outings');
+$('hlOrders').onclick=openOrderHistory;
+$('hlBoard').onclick=()=>goTab('play');
+$('shareProfile').onclick=shareProfile;
+$('tabAll').onclick=()=>setGridTab('all');
+$('tabReels').onclick=()=>setGridTab('reels');
+function setGridTab(m){_gridMode=m;$('tabAll').classList.toggle('on',m==='all');$('tabReels').classList.toggle('on',m==='reels');renderMeGrid();}
+async function shareProfile(){const txt=((myProfile&&myProfile.name)||'A colleague')+' on InsideFA';try{if(navigator.share){await navigator.share({title:'InsideFA',text:txt,url:location.href});return;}}catch(e){}try{await navigator.clipboard.writeText(location.href);alert('Profile link copied!');}catch(e){alert(location.href);}}
+async function loadMeGrid(){ if(!me)return; _myPosts=await getUserPosts(me.id); renderMeGrid(); }
+function renderMeGrid(){
+  const box=$('meGrid'); if(!box)return;
+  let posts=_myPosts; if(_gridMode==='reels')posts=posts.filter(p=>p.media_type==='video');
+  if(!posts.length){box.innerHTML='<div class="empty" style="grid-column:1/-1">'+(_gridMode==='reels'?'No reels yet.':'No posts yet. Share something from the Feed!')+'</div>';return;}
+  box.innerHTML=posts.map(p=>{
+    let inner;
+    if(p.media_url&&p.media_type==='video')inner=`<video src="${p.media_url}" muted preload="metadata"></video><span class="tile-ic">▶</span>`;
+    else if(p.media_url)inner=`<img src="${p.media_url}" alt=""/>`;
+    else if(p.media_emoji)inner=`<span class="tile-emoji">${p.media_emoji}</span>`;
+    else inner=`<span class="tile-text">${esc((p.text||'').slice(0,90))}</span>`;
+    return `<button class="tile" data-postid="${p.id}">${inner}</button>`;
+  }).join('');
+  box.querySelectorAll('[data-postid]').forEach(b=>b.onclick=()=>{const post=_myPosts.find(x=>x.id===b.dataset.postid);if(post)openPostView(post);});
+}
+function openPostView(post){
+  $('sheet').classList.add('open');
+  let media='';
+  if(post.media_url&&post.media_type==='video')media=`<video src="${post.media_url}" controls style="width:100%;border-radius:12px;margin-bottom:10px"></video>`;
+  else if(post.media_url)media=`<img src="${post.media_url}" style="width:100%;border-radius:12px;margin-bottom:10px"/>`;
+  else if(post.media_emoji)media=`<div class="media" style="margin-bottom:10px">${post.media_emoji}</div>`;
+  $('sheetBody').innerHTML=`<div class="grab"></div>${media}<p style="font-size:14px;line-height:1.5;white-space:pre-wrap">${esc(post.text||'')}</p><div style="font-size:12px;color:var(--ink-soft);margin:8px 0 14px">${fmtWhen(post.created_at)}</div><button class="btn ghost" id="closePV">Close</button>`;
+  $('closePV').onclick=()=>$('sheet').classList.remove('open');
+}
+async function openOrderHistory(){
+  $('sheet').classList.add('open');
+  $('sheetBody').innerHTML='<div class="grab"></div><h3>Your orders</h3><div id="ohList"><div class="empty">Loading…</div></div>';
+  const orders=await getMyOrders();
+  const lbl={placed:'Order placed',preparing:'Being prepared',ready:'Ready to collect',collected:'Collected',cancelled:'Cancelled'};
+  if(!orders.length){$('ohList').innerHTML='<div class="empty">No orders yet.</div>';return;}
+  $('ohList').innerHTML=orders.map(o=>{
+    const items=(o.order_items||[]).map(i=>`${i.qty}× ${esc(i.name)}`).join(', ');
+    const canCancel=o.status==='placed'||o.status==='preparing';
+    return `<div class="adm"><div class="top"><b>₹${o.total}</b><span class="status-pill s-${o.status}">${lbl[o.status]||o.status}</span><span class="when">${timeAgo(o.created_at)}</span></div><div class="items">${items||'—'}</div>${canCancel?`<button class="abtn danger" data-ohc="${o.id}">Cancel order</button>`:''}</div>`;
+  }).join('');
+  $('ohList').querySelectorAll('[data-ohc]').forEach(b=>b.onclick=async()=>{if(confirm('Cancel this order?')){const r=await cancelOrder(b.dataset.ohc);if(r&&r.error){alert('Could not cancel: '+r.error.message);return;}openOrderHistory();loadMyOrders();}});
+}
 
 /* FEED */
 async function loadFeed(){
@@ -782,6 +873,7 @@ $('nav').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
   if(current==='admin'&&isStaff)loadAdmin();
   if(current==='play'){renderOnline();challengeCount=0;setNavBadge('play',0);}
   if(current==='shop')loadMyOrders();
+  if(current==='me')loadMeGrid();
 });
 </script>
 </body>
