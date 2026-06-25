@@ -114,6 +114,16 @@ export async function placeOrder(cart) {
   await db.from('order_items').insert(cart.map(i => ({ order_id: order.id, menu_item_id: i.id, name: i.name, qty: i.qty, price_each: i.price })));
   return { order };
 }
+export async function getMyOrders() {
+  const user = await currentUser();
+  const { data } = await db.from('orders')
+    .select('*, order_items(name,qty,price_each)')
+    .eq('user_id', user.id).order('created_at', { ascending: false });
+  return data ?? [];
+}
+export async function cancelOrder(orderId) {
+  return db.from('orders').update({ status: 'cancelled' }).eq('id', orderId);
+}
 
 // ---------- OUTINGS -------------------------------------------------
 export async function getOutings() {
