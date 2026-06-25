@@ -56,15 +56,31 @@ export async function uploadAvatar(file) {
 
 // ---------- FEED ----------------------------------------------------
 export async function getFeed() {
-  const { data } = await db.from('posts')
-    .select('*, author:profiles(name,initials,color,department,avatar_url), comments(id,text,author:profiles(name)), post_likes(user_id)')
-    .order('created_at', { ascending: false });
+  const rich = '*, author:profiles(name,initials,color,department,avatar_url), comments(id,text,author:profiles(name)), post_likes(user_id)';
+  const lean = '*, author:profiles(name,initials,color,department), comments(id,text,author:profiles(name)), post_likes(user_id)';
+  let { data, error } = await db.from('posts').select(rich).order('created_at', { ascending: false });
+  if (error) ({ data } = await db.from('posts').select(lean).order('created_at', { ascending: false }));
   return data ?? [];
 }
-export async function addPost(text, mediaEmoji = null) {
+export async function addPost(text, media = null) {
   const user = await currentUser();
-  const { error } = await db.from('posts').insert({ author_id: user.id, text, media_emoji: mediaEmoji });
-  return error;                          // null = success
+  const row = { author_id: user.id, text };
+  if (media && media.url) { row.media_url = media.url; row.media_type = media.type; }
+  let { error } = await db.from('posts').insert(row);
+  // if the media columns aren't added yet, still save the text
+  if (error && /media_url|media_type|column/i.test(error.message || '')) {
+    ({ error } = await db.from('posts').insert({ author_id: user.id, text }));
+  }
+  return error;
+}
+export async function uploadMedia(file) {
+  const user = await currentUser();
+  const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+  const path = `${user.id}/${Date.now()}.${ext}`;
+  const { error } = await db.storage.from('media').upload(path, file, { upsert: true, contentType: file.type });
+  if (error) return { error };
+  const { data } = db.storage.from('media').getPublicUrl(path);
+  return { url: data.publicUrl, type: file.type.startsWith('video') ? 'video' : 'image' };
 }
 export async function toggleLike(postId) {
   const user = await currentUser();
@@ -101,9 +117,10 @@ export async function placeOrder(cart) {
 
 // ---------- OUTINGS -------------------------------------------------
 export async function getOutings() {
-  const { data } = await db.from('outings')
-    .select('*, author:profiles(name,initials,color,department,avatar_url), outing_joins(user_id, profiles(initials,color,avatar_url))')
-    .order('created_at', { ascending: false });
+  const rich = '*, author:profiles(name,initials,color,department,avatar_url), outing_joins(user_id, profiles(initials,color,avatar_url))';
+  const lean = '*, author:profiles(name,initials,color,department), outing_joins(user_id, profiles(initials,color))';
+  let { data, error } = await db.from('outings').select(rich).order('created_at', { ascending: false });
+  if (error) ({ data } = await db.from('outings').select(lean).order('created_at', { ascending: false }));
   return data ?? [];
 }
 export async function addOuting(text, pill) {
