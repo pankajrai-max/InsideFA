@@ -329,7 +329,10 @@ $('saveProfile').onclick=async()=>{
 
 /* FEED */
 async function loadFeed(){
-  const posts=await getFeed();
+  let resp=await db.from('posts').select('*, author:profiles(name,initials,color,department,avatar_url), comments(id,text,author:profiles(name)), post_likes(user_id)').order('created_at',{ascending:false});
+  if(resp.error) resp=await db.from('posts').select('*, author:profiles(name,initials,color,department), comments(id,text), post_likes(user_id)').order('created_at',{ascending:false});
+  if(resp.error){$('feedList').innerHTML='<div class="empty">Could not load the feed:<br>'+esc(resp.error.message||'unknown error')+'</div>';return;}
+  const posts=resp.data||[];
   if(!posts.length){$('feedList').innerHTML='<div class="empty">No posts yet. Be the first to share something!</div>';return;}
   $('feedList').innerHTML=posts.map(p=>{
     const a=p.author||{}, ini=a.initials||initialsOf(a.name), col=a.color||colorFor(a.name);
@@ -446,7 +449,10 @@ $('sheet').addEventListener('click',e=>{if(e.target.id==='sheet')$('sheet').clas
 
 /* OUTINGS */
 async function loadOutings(){
-  const outs=await getOutings();
+  let resp=await db.from('outings').select('*, author:profiles(name,initials,color,department,avatar_url), outing_joins(user_id, profiles(initials,color,avatar_url))').order('created_at',{ascending:false});
+  if(resp.error) resp=await db.from('outings').select('*, author:profiles(name,initials,color,department), outing_joins(user_id, profiles(initials,color))').order('created_at',{ascending:false});
+  if(resp.error){$('outingList').innerHTML='<div class="empty">Could not load outings:<br>'+esc(resp.error.message||'unknown error')+'</div>';return;}
+  const outs=resp.data||[];
   if(!outs.length){$('outingList').innerHTML='<div class="empty">No plans yet. Start one above!</div>';return;}
   $('outingList').innerHTML=outs.map(o=>{
     const a=o.author||{},ini=a.initials||initialsOf(a.name),col=a.color||colorFor(a.name);
