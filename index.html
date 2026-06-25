@@ -157,6 +157,27 @@
   .ct-actions{display:flex;gap:8px;margin-top:10px}
   .challenge-toast .abtn{flex:1;background:rgba(255,255,255,.16);border:none;color:#fff;border-radius:10px;padding:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit}
   .challenge-toast .abtn.go{background:var(--teal)}
+  .field{margin-top:10px}.field:first-child{margin-top:0}
+  .field label{display:block;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px}
+  .field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-size:14px;font-family:inherit;outline:none;background:var(--surface);color:var(--ink)}
+  .field input:focus,.field textarea:focus{border-color:var(--violet)}
+  .field textarea{resize:none}
+  .name-link{cursor:pointer}
+  .nav button .ni{padding:3px 14px;border-radius:999px;transition:background .15s}
+  .nav button.active .ni{background:var(--surface-2)}
+  .acts{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+  .reacts{display:flex;gap:6px;flex-wrap:wrap}
+  .react{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:15px;cursor:pointer;line-height:1}
+  .react i{font-style:normal;font-size:12px;font-weight:800;color:var(--ink-soft)}
+  .react.on{background:#efe9ff;border-color:var(--violet)}
+  .react.on i{color:var(--violet)}
+  .cc{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .ofields{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  .ofields input{border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13.5px;font-family:inherit;outline:none;background:var(--surface);color:var(--ink)}
+  .odetails{font-size:12.5px;color:var(--ink-soft);margin:0 0 9px;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+  .odetails .dot{opacity:.45}
+  .join:disabled{opacity:.5;cursor:not-allowed}
+  .menu-item .pic{overflow:hidden}.menu-item .pic img{width:100%;height:100%;object-fit:cover}
 </style>
 </head>
 <body>
@@ -199,7 +220,9 @@
 
     <div class="screen hidden" id="tab-outings">
       <div class="card"><div class="compose"><div class="ava" id="meAva2" style="background:var(--teal)">··</div><textarea id="newOuting" placeholder="Going somewhere? Invite the team…"></textarea></div>
-        <div style="padding:0 13px 13px"><button class="mini" style="padding:9px 16px;background:var(--teal)" id="outingBtn">Post plan</button></div></div>
+        <div style="padding:0 13px 13px">
+          <div class="ofields"><input id="outWhen" type="datetime-local"/><input id="outWhere" placeholder="Where? e.g. Cyber Hub"/><input id="outCap" type="number" min="0" placeholder="Max people (optional)"/></div>
+          <button class="mini" style="padding:9px 16px;background:var(--teal)" id="outingBtn">Post plan</button></div></div>
       <div id="outingList"></div>
     </div>
 
@@ -239,13 +262,19 @@
         <div class="ava" id="meAvaBig">··</div>
         <input type="file" id="photoInput" accept="image/*" hidden/>
         <button class="photo-btn" id="changePhoto">Change photo</button>
-        <input class="name-input" id="meNameInput" placeholder="Your name"/>
-        <div class="role" id="meRole">—</div>
       </div>
       <div class="stats"><div class="stat"><b id="sPosts">0</b><small>POSTS</small></div><div class="stat"><b id="sOrders">0</b><small>ORDERS</small></div><div class="stat"><b id="sWins">0</b><small>WINS</small></div></div>
-      <button class="btn" id="saveProfile" style="margin-top:16px">Save changes</button>
-      <button class="signout" id="signoutBtn">Log out</button>
+      <div class="eyebrow">Your profile</div>
+      <div class="card" style="padding:14px">
+        <div class="field"><label>Name</label><input id="meNameInput" placeholder="Your name"/></div>
+        <div class="field"><label>Designation</label><input id="meDesigInput" placeholder="e.g. Software Engineer"/></div>
+        <div class="field"><label>Department</label><input id="meDeptInput" placeholder="e.g. Engineering"/></div>
+        <div class="field"><label>Bio</label><textarea id="meBioInput" rows="3" placeholder="Tell the team a bit about you…"></textarea></div>
+      </div>
+      <button class="btn" id="saveProfile">Save changes</button>
       <div id="profMsg" style="text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:10px"></div>
+      <button class="abtn" id="browsePeople" style="width:100%;margin-top:14px;padding:13px;font-size:14px">Browse colleagues</button>
+      <button class="signout" id="signoutBtn">Log out</button>
     </div>
 
     <div class="screen hidden" id="tab-admin">
@@ -254,7 +283,7 @@
       <div class="eyebrow">Invite a teammate</div>
       <div class="adm"><div class="inv"><input id="inviteEmail" type="email" placeholder="name@flick2know.com" /><button class="abtn go" id="inviteBtn">Send</button></div><div id="inviteMsg" style="font-size:12px;color:var(--ink-soft)"></div></div>
       <div class="eyebrow">Menu</div>
-      <div class="adm"><div class="inv"><input id="miName" placeholder="Item" style="flex:2"/><input id="miPrice" placeholder="₹" type="number" style="flex:1"/><input id="miEmoji" placeholder="🍪" style="flex:1"/><button class="abtn go" id="miAdd">Add</button></div></div>
+      <div class="adm"><div class="inv"><input id="miName" placeholder="Item" style="flex:2"/><input id="miPrice" placeholder="₹" type="number" style="flex:1"/><input id="miEmoji" placeholder="🍪" style="flex:1"/><input id="miPhoto" type="file" accept="image/*" hidden/><button class="abtn" id="miPhotoBtn" type="button" title="Add photo">📷</button><button class="abtn go" id="miAdd">Add</button></div></div>
       <div id="admMenu"></div>
       <div class="eyebrow">People</div>
       <div id="admUsers"></div>
@@ -279,15 +308,17 @@
 <script type="module">
 import { db, signInLink, signInPassword, emailAllowed, signOut, currentUser, ensureProfile, updateProfile, uploadAvatar, uploadMedia,
   getFeed, addPost, toggleLike, addComment, watchFeed, deletePost, deleteComment,
-  getMenu, placeOrder, getMyOrders, cancelOrder, getOutings, addOuting, toggleJoin, deleteOuting,
+  getMenu, placeOrder, getMyOrders, cancelOrder, getOutings, addOuting, toggleJoin, deleteOuting, setReaction,
   findOrCreateGame, watchGame, dropConnect4, placeTTT, getLeaderboard, createInvite, acceptInvite, declineInvite,
   inviteUser, getOpenOrders, setOrderStatus, watchOrders, getAllUsers, setBlocked, removeUser,
-  getMenuAll, addMenuItem, setMenuAvailable, deleteMenuItem } from './db.js';
+  getMenuAll, addMenuItem, setMenuAvailable, deleteMenuItem, getProfile, getPeople } from './db.js';
 
 const $=id=>document.getElementById(id);
 let me=null, myProfile=null, isStaff=false, current='feed';
 let menuCache=[], cart={};
-let game=null, myNum=null, gameSub=null;
+let game=null, myNum=null, gameSub=null, challengeCount=0;
+const REACTS=[['like','❤️'],['celebrate','🎉'],['support','👏'],['funny','😂']];
+function fmtWhen(ts){const d=new Date(ts);if(isNaN(d))return '';return d.toLocaleString([], {weekday:'short',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});}
 const COLORS=['#6C4DF2','#13C2A3','#FFB23E','#FF6B6B','#4A32C0','#0EA5E9'];
 const initialsOf=n=>(n||'?').trim().slice(0,2).toUpperCase();
 const colorFor=n=>COLORS[((n||'').charCodeAt(0)||0)%COLORS.length];
@@ -317,7 +348,7 @@ async function onLogin(user){
   myProfile=prof; isStaff=!!prof.is_staff;
   $('login').classList.add('hidden'); $('app').classList.remove('hidden');
   setAva($('meAva1'),prof); setAva($('meAva2'),prof); setAva($('meAvaBig'),prof);
-  $('meNameInput').value=prof.name||''; $('meRole').textContent=prof.department||'Team';
+  $('meNameInput').value=prof.name||''; $('meDesigInput').value=prof.designation||''; $('meDeptInput').value=prof.department||''; $('meBioInput').value=prof.bio||'';
   $('navAdmin').style.display=isStaff?'flex':'none';
   await Promise.all([loadFeed(),loadMenu(),loadOutings(),loadLeaderboard(),loadStats()]);
   watchFeed(()=>loadFeed()); startPresence(); watchChallenges();
@@ -337,14 +368,44 @@ $('photoInput').onchange=async(e)=>{
   $('profMsg').textContent='✓ Photo updated'; loadFeed(); loadOutings();
 };
 $('saveProfile').onclick=async()=>{
-  const name=$('meNameInput').value.trim(); if(!name){$('profMsg').textContent='Name cannot be empty.';return;}
+  const name=$('meNameInput').value.trim(); if(!name){$('profMsg').style.color='var(--coral)';$('profMsg').textContent='Name cannot be empty.';return;}
   const ini=name.slice(0,2).toUpperCase();
-  const err=await updateProfile({name,initials:ini});
-  if(err){$('profMsg').textContent='Could not save: '+err.message;return;}
-  myProfile.name=name; myProfile.initials=ini;
+  const fields={name,initials:ini,designation:$('meDesigInput').value.trim(),department:$('meDeptInput').value.trim()||'Team',bio:$('meBioInput').value.trim()};
+  const err=await updateProfile(fields);
+  if(err){$('profMsg').style.color='var(--coral)';$('profMsg').textContent='Could not save: '+(err.message||err);return;}
+  Object.assign(myProfile,fields);
   setAva($('meAvaBig'),myProfile); setAva($('meAva1'),myProfile); setAva($('meAva2'),myProfile);
-  $('profMsg').textContent='✓ Saved'; loadFeed(); loadOutings(); loadStats();
+  $('profMsg').style.color='var(--teal)';$('profMsg').textContent='✓ Saved'; loadFeed(); loadOutings();
 };
+async function openProfile(userId){
+  $('sheet').classList.add('open'); $('sheetBody').innerHTML='<div class="grab"></div><div class="empty">Loading…</div>';
+  const p=await getProfile(userId);
+  if(!p){$('sheetBody').innerHTML='<div class="grab"></div><div class="empty">Profile not found.</div>';return;}
+  const ini=p.initials||initialsOf(p.name), col=p.color||colorFor(p.name);
+  const av=p.avatar_url?`<div class="ava" style="width:74px;height:74px;margin:0 auto;background:center/cover url('${p.avatar_url}')"></div>`:`<div class="ava" style="width:74px;height:74px;margin:0 auto;font-size:27px;background:${col}">${ini}</div>`;
+  const sub=[p.designation,p.department].filter(Boolean).join(' · ');
+  $('sheetBody').innerHTML=`<div class="grab"></div><div style="text-align:center;padding:4px 0">${av}<h3 style="margin:12px 0 2px">${esc(p.name)}</h3>${sub?`<div class="sub" style="margin-bottom:6px">${esc(sub)}</div>`:''}</div>${p.bio?`<p style="font-size:14px;line-height:1.55;text-align:center;margin:4px 6px 16px">${esc(p.bio)}</p>`:'<div class="empty" style="padding:4px 0 14px">No bio yet.</div>'}<button class="btn ghost" id="closeProf">Close</button>`;
+  $('closeProf').onclick=()=>$('sheet').classList.remove('open');
+}
+let _people=[];
+$('browsePeople').onclick=openDirectory;
+async function openDirectory(){
+  _people=await getPeople();
+  $('sheet').classList.add('open');
+  $('sheetBody').innerHTML=`<div class="grab"></div><h3>Colleagues</h3><input id="dirSearch" placeholder="Search name or team…" style="width:100%;border:1px solid var(--line);border-radius:11px;padding:11px;font-size:14px;font-family:inherit;outline:none;margin:6px 0 12px"/><div id="dirList" style="max-height:52vh;overflow:auto"></div>`;
+  $('dirSearch').oninput=()=>renderDir($('dirSearch').value.toLowerCase());
+  renderDir('');
+}
+function renderDir(q){
+  const list=_people.filter(p=>!q||((p.name||'').toLowerCase().includes(q)||(p.department||'').toLowerCase().includes(q)||(p.designation||'').toLowerCase().includes(q)));
+  $('dirList').innerHTML=list.length?list.map(p=>{
+    const ini=p.initials||initialsOf(p.name),col=p.color||colorFor(p.name);
+    const av=p.avatar_url?`<div class="ava" style="width:36px;height:36px;background:center/cover url('${p.avatar_url}')"></div>`:`<div class="ava" style="width:36px;height:36px;font-size:13px;background:${col}">${ini}</div>`;
+    return `<div class="online-row" data-dirp="${p.id}" style="cursor:pointer">${av}<div class="grow"><div class="nm">${esc(p.name)}</div><div class="dp">${esc(p.designation||p.department||'Team')}</div></div></div>`;
+  }).join(''):'<div class="empty">No one found.</div>';
+  $('dirList').querySelectorAll('[data-dirp]').forEach(b=>b.onclick=()=>openProfile(b.dataset.dirp));
+}
+function setNavBadge(tab,n){const btn=document.querySelector('.nav [data-tab="'+tab+'"]');if(!btn)return;btn.querySelectorAll('.badge').forEach(e=>e.remove());if(n>0){const s=document.createElement('span');s.className='badge';s.textContent=n;btn.appendChild(s);}}
 
 /* FEED */
 async function loadFeed(){
@@ -355,7 +416,7 @@ async function loadFeed(){
   const ids=posts.map(p=>p.id), aids=[...new Set(posts.map(p=>p.author_id))];
   const [pf,lk,cm]=await Promise.all([
     db.from('profiles').select('id,name,initials,color,department,avatar_url').in('id',aids),
-    db.from('post_likes').select('post_id,user_id').in('post_id',ids),
+    db.from('post_likes').select('post_id,user_id,reaction').in('post_id',ids),
     db.from('comments').select('id,post_id,text,author_id').in('post_id',ids).order('created_at')
   ]);
   const P={}; (pf.data||[]).forEach(x=>P[x.id]=x);
@@ -364,26 +425,29 @@ async function loadFeed(){
   posts.forEach(p=>{p.author=P[p.author_id]||{};p.post_likes=L[p.id]||[];p.comments=CM[p.id]||[];});
   $('feedList').innerHTML=posts.map(p=>{
     const a=p.author||{}, ini=a.initials||initialsOf(a.name), col=a.color||colorFor(a.name);
-    const likes=p.post_likes||[], liked=likes.some(l=>l.user_id===me.id), cmts=p.comments||[];
+    const likes=p.post_likes||[], cmts=p.comments||[];
+    const myR=(likes.find(l=>l.user_id===me.id)||{}).reaction||(likes.some(l=>l.user_id===me.id)?'like':null);
+    const rc={}; likes.forEach(l=>{const r=l.reaction||'like';rc[r]=(rc[r]||0)+1;});
     return `<div class="card"><div class="post">
       <div class="who">${avaHTML(a)}
-        <div><div class="name">${esc(a.name||'Someone')}</div><div class="meta">${esc(a.department||'Team')}</div></div>
+        <div><div class="name name-link" data-profile="${a.id||''}">${esc(a.name||'Someone')}</div><div class="meta">${esc(a.department||'Team')}</div></div>
         ${isStaff?`<button class="del" data-delpost="${p.id}" title="Remove post">🗑</button>`:''}</div>
       <p>${tagify(esc(p.text))}</p>${p.media_url?(p.media_type==='video'?`<video class="post-media" src="${p.media_url}" controls preload="metadata"></video>`:`<img class="post-media" src="${p.media_url}"/>`):(p.media_emoji?`<div class="media">${p.media_emoji}</div>`:'')}
       <div class="acts">
-        <button class="act ${liked?'on':''}" data-like="${p.id}"><span class="ic">${liked?'❤️':'🤍'}</span> ${likes.length}</button>
-        <button class="act"><span class="ic">💬</span> ${cmts.length}</button><button class="act"><span class="ic">↗️</span> Share</button></div>
+        <div class="reacts">${REACTS.map(([k,e])=>`<button class="react ${myR===k?'on':''}" data-react="${p.id}" data-rk="${k}">${e}${rc[k]?`<i>${rc[k]}</i>`:''}</button>`).join('')}</div>
+        <span class="cc">💬 ${cmts.length}</span></div>
       <div class="comments">
         ${cmts.map(c=>`<div class="cmt"><span><b>${esc(c.author?.name||'Someone')}:</b> ${esc(c.text)}</span>${isStaff?`<button class="del" data-delcmt="${c.id}">✕</button>`:''}</div>`).join('')}
         <div class="cmt-row"><input placeholder="Add a comment…" data-ci="${p.id}"><button class="mini" data-send="${p.id}">Send</button></div>
       </div></div></div>`;
   }).join('');
   const F=$('feedList');
-  F.querySelectorAll('[data-like]').forEach(b=>b.onclick=async()=>{await toggleLike(b.dataset.like);loadFeed();});
+  F.querySelectorAll('[data-react]').forEach(b=>b.onclick=async()=>{await setReaction(b.dataset.react,b.dataset.rk);loadFeed();});
   F.querySelectorAll('[data-send]').forEach(b=>b.onclick=()=>sendComment(b.dataset.send));
   F.querySelectorAll('[data-ci]').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')sendComment(i.dataset.ci);}));
   F.querySelectorAll('[data-delpost]').forEach(b=>b.onclick=async()=>{if(confirm('Remove this post?')){await deletePost(b.dataset.delpost);loadFeed();}});
   F.querySelectorAll('[data-delcmt]').forEach(b=>b.onclick=async()=>{await deleteComment(b.dataset.delcmt);loadFeed();});
+  F.querySelectorAll('[data-profile]').forEach(el=>el.onclick=()=>openProfile(el.dataset.profile));
 }
 async function sendComment(pid){const i=document.querySelector(`[data-ci="${pid}"]`);if(!i.value.trim())return;const err=await addComment(pid,i.value.trim());if(err){alert('Could not comment: '+err.message);return;}i.value='';loadFeed();}
 let pendingMedia=null;
@@ -439,7 +503,7 @@ $('postBtn').onclick=async()=>{
 async function loadMenu(){menuCache=await getMenu();renderMenu();}
 function renderMenu(){
   $('menuList').innerHTML=menuCache.map((m,i)=>{const q=cart[m.id]||0;
-    return `<div class="menu-item" style="${i?'border-top:1px solid var(--line)':''}"><div class="pic">${m.emoji||'🍽️'}</div>
+    return `<div class="menu-item" style="${i?'border-top:1px solid var(--line)':''}"><div class="pic">${m.image_url?`<img src="${m.image_url}" alt=""/>`:(m.emoji||'🍽️')}</div>
       <div class="info"><b>${esc(m.name)}</b><small>${esc(m.description||'')}</small></div><div class="price">₹${m.price}</div>
       ${q===0?`<button class="add" data-add="${m.id}">+</button>`:`<div class="qty"><button data-q="${m.id}" data-d="-1">−</button><b>${q}</b><button data-q="${m.id}" data-d="1">+</button></div>`}</div>`;}).join('');
   $('menuList').querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{cart[b.dataset.add]=1;renderMenu();updateCart();});
@@ -505,17 +569,21 @@ async function loadOutings(){
   $('outingList').innerHTML=outs.map(o=>{
     const a=o.author||{},ini=a.initials||initialsOf(a.name),col=a.color||colorFor(a.name);
     const joins=o.outing_joins||[],joined=joins.some(j=>j.user_id===me.id);
+    const cap=o.capacity||0, full=cap>0&&joins.length>=cap&&!joined;
+    const meta=[]; if(o.event_at)meta.push('🗓️ '+fmtWhen(o.event_at)); if(o.location)meta.push('📍 '+esc(o.location));
     return `<div class="card"><div class="post"><div class="who">${avaHTML(a)}
-      <div><div class="name">${esc(a.name||'Someone')}</div><div class="meta">${esc(a.department||'Team')}</div></div>
+      <div><div class="name name-link" data-profile="${a.id||''}">${esc(a.name||'Someone')}</div><div class="meta">${esc(a.department||'Team')}</div></div>
       ${isStaff?`<button class="del" data-delout="${o.id}">🗑</button>`:''}</div>
       ${o.pill?`<span class="pill">${esc(o.pill)}</span>`:''}<p>${tagify(esc(o.text))}</p>
-      <div class="going"><div class="stack">${joins.slice(0,5).map(j=>{const pr=j.profiles||{};return `<div class="ava" style="background:${pr.color||'#6C4DF2'}">${pr.initials||'··'}</div>`;}).join('')}</div><small>${joins.length} going</small></div>
-      <button class="join ${joined?'in':''}" data-join="${o.id}">${joined?"✓ You're in":'Join them'}</button></div></div>`;
+      ${meta.length?`<div class="odetails">${meta.join('<span class="dot">·</span>')}</div>`:''}
+      <div class="going"><div class="stack">${joins.slice(0,5).map(j=>{const pr=j.profiles||{};return `<div class="ava" style="background:${pr.color||'#6C4DF2'}">${pr.initials||'··'}</div>`;}).join('')}</div><small>${joins.length}${cap?` / ${cap}`:''} going</small></div>
+      <button class="join ${joined?'in':''}" data-join="${o.id}" ${full?'disabled':''}>${joined?"✓ You're in":(full?'Full':'Join them')}</button></div></div>`;
   }).join('');
   $('outingList').querySelectorAll('[data-join]').forEach(b=>b.onclick=async()=>{await toggleJoin(b.dataset.join);loadOutings();});
   $('outingList').querySelectorAll('[data-delout]').forEach(b=>b.onclick=async()=>{if(confirm('Remove this plan?')){await deleteOuting(b.dataset.delout);loadOutings();}});
+  $('outingList').querySelectorAll('[data-profile]').forEach(el=>el.onclick=()=>openProfile(el.dataset.profile));
 }
-$('outingBtn').onclick=async()=>{const el=$('newOuting');if(!el.value.trim())return;el.disabled=true;const err=await addOuting(el.value.trim(),'🗓️ New plan');el.disabled=false;if(err){alert('Could not post plan: '+err.message);return;}el.value='';loadOutings();};
+$('outingBtn').onclick=async()=>{const el=$('newOuting');if(!el.value.trim())return;el.disabled=true;const cap=parseInt($('outCap').value)||null;const err=await addOuting({text:el.value.trim(),pill:'🗓️ New plan',event_at:$('outWhen').value||null,location:$('outWhere').value.trim()||null,capacity:cap});el.disabled=false;if(err){alert('Could not post plan: '+(err.message||err));return;}el.value='';$('outWhen').value='';$('outWhere').value='';$('outCap').value='';loadOutings();};
 
 /* PLAY */
 async function loadLeaderboard(){
@@ -563,6 +631,7 @@ function watchChallenges(){
     }).subscribe();
 }
 function showIncoming(g,name){
+  if(current!=='play'){challengeCount++;setNavBadge('play',challengeCount);}
   const t=$('challengeToast');
   t.innerHTML=`<div><b>${esc(name)}</b> challenges you to <b>${g.type==='ttt'?'Tic-Tac-Toe':'Connect Four'}</b></div><div class="ct-actions"><button class="abtn go" id="acceptCh">Accept</button><button class="abtn" id="declineCh">Decline</button></div>`;
   t.classList.add('show');
@@ -662,14 +731,17 @@ $('inviteBtn').onclick=async()=>{
 };
 async function loadAdminMenu(){
   const items=await getMenuAll();
-  $('admMenu').innerHTML=items.map(m=>`<div class="adm"><div class="row"><span style="font-size:20px">${m.emoji||'🍽️'}</span>
+  $('admMenu').innerHTML=items.map(m=>`<div class="adm"><div class="row">${m.image_url?`<img src="${m.image_url}" style="width:34px;height:34px;border-radius:8px;object-fit:cover"/>`:`<span style="font-size:20px">${m.emoji||'🍽️'}</span>`}
     <div class="grow"><div class="nm">${esc(m.name)} <span style="color:var(--ink-soft);font-weight:600">₹${m.price}</span></div><div class="dp">${m.available?'available':'sold out'}</div></div>
     <button class="abtn" data-avl="${m.id}" data-to="${m.available?'false':'true'}">${m.available?'Sold out':'Restock'}</button>
     <button class="abtn danger" data-delmenu="${m.id}">Delete</button></div></div>`).join('');
   $('admMenu').querySelectorAll('[data-avl]').forEach(b=>b.onclick=async()=>{await setMenuAvailable(b.dataset.avl,b.dataset.to==='true');loadAdminMenu();loadMenu();});
   $('admMenu').querySelectorAll('[data-delmenu]').forEach(b=>b.onclick=async()=>{if(confirm('Delete item?')){await deleteMenuItem(b.dataset.delmenu);loadAdminMenu();loadMenu();}});
 }
-$('miAdd').onclick=async()=>{const n=$('miName').value.trim();if(!n)return;await addMenuItem(n,$('miPrice').value,$('miEmoji').value,'');$('miName').value=$('miPrice').value=$('miEmoji').value='';loadAdminMenu();loadMenu();};
+let _miFile=null;
+$('miPhotoBtn').onclick=()=>$('miPhoto').click();
+$('miPhoto').onchange=()=>{_miFile=$('miPhoto').files[0]||null;$('miPhotoBtn').textContent=_miFile?'✓':'📷';};
+$('miAdd').onclick=async()=>{const n=$('miName').value.trim();if(!n)return;$('miAdd').disabled=true;let url='';if(_miFile){const up=await uploadMedia(_miFile);if(up&&up.url)url=up.url;}await addMenuItem(n,$('miPrice').value,$('miEmoji').value,'',url);$('miName').value=$('miPrice').value=$('miEmoji').value='';_miFile=null;$('miPhotoBtn').textContent='📷';$('miPhoto').value='';$('miAdd').disabled=false;loadAdminMenu();loadMenu();};
 async function loadUsers(){
   const users=await getAllUsers();
   $('admUsers').innerHTML=users.map(u=>`<div class="adm"><div class="row"><div class="ava" style="width:34px;height:34px;font-size:12px;background:${u.color||'#6C4DF2'}">${u.initials||'··'}</div>
@@ -687,7 +759,7 @@ $('nav').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
   $('nav').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));
   $('tab-'+current).scrollTop=0; updateCart();
   if(current==='admin'&&isStaff)loadAdmin();
-  if(current==='play')renderOnline();
+  if(current==='play'){renderOnline();challengeCount=0;setNavBadge('play',0);}
   if(current==='shop')loadMyOrders();
 });
 </script>
