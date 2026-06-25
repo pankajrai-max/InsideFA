@@ -329,11 +329,20 @@ $('saveProfile').onclick=async()=>{
 
 /* FEED */
 async function loadFeed(){
-  let resp=await db.from('posts').select('*, author:profiles(name,initials,color,department,avatar_url), comments(id,text,author:profiles(name)), post_likes(user_id)').order('created_at',{ascending:false});
-  if(resp.error) resp=await db.from('posts').select('*, author:profiles(name,initials,color,department), comments(id,text), post_likes(user_id)').order('created_at',{ascending:false});
-  if(resp.error){$('feedList').innerHTML='<div class="empty">Could not load the feed:<br>'+esc(resp.error.message||'unknown error')+'</div>';return;}
-  const posts=resp.data||[];
+  const pr=await db.from('posts').select('*').order('created_at',{ascending:false});
+  if(pr.error){$('feedList').innerHTML='<div class="empty">Could not load the feed:<br>'+esc(pr.error.message||'error')+'</div>';return;}
+  const posts=pr.data||[];
   if(!posts.length){$('feedList').innerHTML='<div class="empty">No posts yet. Be the first to share something!</div>';return;}
+  const ids=posts.map(p=>p.id), aids=[...new Set(posts.map(p=>p.author_id))];
+  const [pf,lk,cm]=await Promise.all([
+    db.from('profiles').select('id,name,initials,color,department,avatar_url').in('id',aids),
+    db.from('post_likes').select('post_id,user_id').in('post_id',ids),
+    db.from('comments').select('id,post_id,text,author_id').in('post_id',ids).order('created_at')
+  ]);
+  const P={}; (pf.data||[]).forEach(x=>P[x.id]=x);
+  const L={}; (lk.data||[]).forEach(x=>{(L[x.post_id]=L[x.post_id]||[]).push({user_id:x.user_id});});
+  const CM={}; (cm.data||[]).forEach(x=>{(CM[x.post_id]=CM[x.post_id]||[]).push({id:x.id,text:x.text,author:{name:(P[x.author_id]||{}).name}});});
+  posts.forEach(p=>{p.author=P[p.author_id]||{};p.post_likes=L[p.id]||[];p.comments=CM[p.id]||[];});
   $('feedList').innerHTML=posts.map(p=>{
     const a=p.author||{}, ini=a.initials||initialsOf(a.name), col=a.color||colorFor(a.name);
     const likes=p.post_likes||[], liked=likes.some(l=>l.user_id===me.id), cmts=p.comments||[];
@@ -449,11 +458,18 @@ $('sheet').addEventListener('click',e=>{if(e.target.id==='sheet')$('sheet').clas
 
 /* OUTINGS */
 async function loadOutings(){
-  let resp=await db.from('outings').select('*, author:profiles(name,initials,color,department,avatar_url), outing_joins(user_id, profiles(initials,color,avatar_url))').order('created_at',{ascending:false});
-  if(resp.error) resp=await db.from('outings').select('*, author:profiles(name,initials,color,department), outing_joins(user_id, profiles(initials,color))').order('created_at',{ascending:false});
-  if(resp.error){$('outingList').innerHTML='<div class="empty">Could not load outings:<br>'+esc(resp.error.message||'unknown error')+'</div>';return;}
-  const outs=resp.data||[];
+  const orr=await db.from('outings').select('*').order('created_at',{ascending:false});
+  if(orr.error){$('outingList').innerHTML='<div class="empty">Could not load outings:<br>'+esc(orr.error.message||'error')+'</div>';return;}
+  const outs=orr.data||[];
   if(!outs.length){$('outingList').innerHTML='<div class="empty">No plans yet. Start one above!</div>';return;}
+  const oids=outs.map(o=>o.id);
+  const jn=await db.from('outing_joins').select('outing_id,user_id').in('outing_id',oids);
+  const joins=jn.data||[];
+  const need=[...new Set([...outs.map(o=>o.author_id),...joins.map(j=>j.user_id)])];
+  const pf=await db.from('profiles').select('id,name,initials,color,department,avatar_url').in('id',need);
+  const P={}; (pf.data||[]).forEach(x=>P[x.id]=x);
+  const J={}; joins.forEach(j=>{(J[j.outing_id]=J[j.outing_id]||[]).push({user_id:j.user_id,profiles:P[j.user_id]||{}});});
+  outs.forEach(o=>{o.author=P[o.author_id]||{};o.outing_joins=J[o.id]||[];});
   $('outingList').innerHTML=outs.map(o=>{
     const a=o.author||{},ini=a.initials||initialsOf(a.name),col=a.color||colorFor(a.name);
     const joins=o.outing_joins||[],joined=joins.some(j=>j.user_id===me.id);
