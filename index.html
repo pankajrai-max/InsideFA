@@ -213,6 +213,15 @@
   .tile-text{font-size:11px;color:var(--ink-soft);padding:8px;text-align:center;line-height:1.35;overflow:hidden}
   .menu-row{display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid var(--line);padding:14px 4px;font-size:14.5px;color:var(--ink);cursor:pointer;font-family:inherit}
   .menu-row.danger{color:var(--coral)}
+  .chessboard{width:100%;max-width:340px;margin:12px auto 0;aspect-ratio:1;display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);border-radius:12px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow)}
+  .sq{position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .sq.lt{background:#ECE6FB}.sq.dk{background:#B7A6EE}
+  .sq.sel{box-shadow:inset 0 0 0 3px var(--violet)}
+  .sq .pc{font-size:28px;line-height:1;user-select:none;pointer-events:none}
+  .sq .pc.wp{color:#fff;text-shadow:0 0 1px #2a2a2a,0 1px 2px rgba(0,0,0,.35)}
+  .sq .pc.bp{color:#161616}
+  .sq.mv::after{content:"";position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(70,45,170,.45)}
+  .sq.cap{box-shadow:inset 0 0 0 3px rgba(214,64,96,.75)}
 </style>
 </head>
 <body>
@@ -270,6 +279,7 @@
           <div class="game-card" data-game="connect4"><div class="em">🔴</div><b>Connect Four</b><small>2 players · live</small></div>
           <div class="game-card" data-game="ttt"><div class="em">⭕</div><b>Tic-Tac-Toe</b><small>2 players · live</small></div>
           <div class="game-card" data-game="memory"><div class="em">🧩</div><b>Memory Match</b><small>solo · beat your time</small></div>
+          <div class="game-card" data-game="chess"><div class="em">♟️</div><b>Chess</b><small>vs computer</small></div>
           <div class="game-card soon"><div class="em">🧠</div><b>Quiz battle</b><small>coming soon</small></div>
         </div>
         <div class="eyebrow">This week's leaderboard</div>
@@ -289,6 +299,11 @@
       <div id="gameMem" class="hidden">
         <div class="row" style="display:flex;align-items:center;justify-content:space-between;margin:6px 2px 12px"><button class="mini" style="background:var(--surface-2);color:var(--violet-ink)" data-leave>← Back</button><b style="font-size:15px" id="memMoves">Moves: 0</b><button class="mini" style="background:var(--surface-2);color:var(--violet-ink)" data-newmem>New</button></div>
         <div class="mem" id="memBoard"></div><div class="win-banner hidden" id="memWin"></div>
+      </div>
+
+      <div id="gameChess" class="hidden">
+        <div class="row" style="display:flex;align-items:center;justify-content:space-between;margin:6px 2px 2px"><button class="mini" style="background:var(--surface-2);color:var(--violet-ink)" data-leave>← Back</button><b style="font-size:15px">Chess · vs computer</b><button class="mini" style="background:var(--surface-2);color:var(--violet-ink)" data-newchess>New</button></div>
+        <div class="turn" id="chessTurn"></div><div class="chessboard" id="chessBoard"></div><div class="win-banner hidden" id="chessWin"></div>
       </div>
     </div>
 
@@ -757,9 +772,10 @@ document.querySelectorAll('[data-leave]').forEach(b=>b.onclick=leaveGame);
 document.querySelector('[data-newc4]').onclick=()=>startLive('connect4');
 document.querySelector('[data-newttt]').onclick=()=>startLive('ttt');
 document.querySelector('[data-newmem]').onclick=newMemory;
-function showSub(id){['gameLobby','gameC4','gameTTT','gameMem'].forEach(x=>$(x).classList.add('hidden'));$(id).classList.remove('hidden');}
+document.querySelector('[data-newchess]').onclick=newChess;
+function showSub(id){['gameLobby','gameC4','gameTTT','gameMem','gameChess'].forEach(x=>$(x).classList.add('hidden'));$(id).classList.remove('hidden');}
 function leaveGame(){ if(gameSub){db.removeChannel(gameSub);gameSub=null;} showSub('gameLobby'); loadLeaderboard(); }
-function openGame(type){ if(type==='memory'){showSub('gameMem');newMemory();} else startLive(type); }
+function openGame(type){ if(type==='memory'){showSub('gameMem');newMemory();} else if(type==='chess'){showSub('gameChess');newChess();} else startLive(type); }
 
 async function startLive(type){
   showSub(type==='connect4'?'gameC4':'gameTTT');
@@ -809,6 +825,99 @@ function flipMem(idx){
       if(mem.cards.every(x=>x.done)){$('memWin').classList.remove('hidden');$('memWin').textContent=`🎉 Solved in ${mem.moves} moves!`;} }
     else setTimeout(()=>{mem.cards[a].up=mem.cards[b].up=false;mem.flipped=[];mem.lock=false;renderMem();},700);
   }
+}
+
+/* CHESS (vs computer, local). Rules via chess.js loaded lazily so it can never break the app. */
+let _Chess=null, chess=null, chessSel=null, chessOver=false, chessBusy=false;
+const CHGL={k:'\u265A',q:'\u265B',r:'\u265C',b:'\u265D',n:'\u265E',p:'\u265F'};
+const CHVAL={p:100,n:320,b:330,r:500,q:900,k:20000};
+async function ensureChess(){
+  if(_Chess)return _Chess;
+  const m=await import('https://esm.sh/chess.js@1.0.0');
+  _Chess=m.Chess||(m.default&&m.default.Chess)||m.default;
+  if(!_Chess)throw new Error('no Chess export');
+  return _Chess;
+}
+async function newChess(){
+  const turn=$('chessTurn'); $('chessWin').classList.add('hidden'); $('chessBoard').innerHTML='';
+  turn.textContent='Loading the board…';
+  let C; try{ C=await ensureChess(); }catch(e){ turn.textContent='Could not load the chess engine — check your connection and tap New to retry.'; return; }
+  chess=new C(); chessSel=null; chessOver=false; chessBusy=false; renderChess();
+}
+function renderChess(){
+  const bd=$('chessBoard'); if(!bd||!chess)return; bd.innerHTML='';
+  const board=chess.board();
+  const targets = chessSel ? chess.moves({square:chessSel,verbose:true}).map(m=>m.to) : [];
+  for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+    const sq='abcdefgh'[c]+(8-r);
+    const cell=document.createElement('div');
+    cell.className='sq '+(((r+c)%2===0)?'lt':'dk');
+    if(chessSel===sq)cell.classList.add('sel');
+    const pc=board[r][c];
+    if(pc){const s=document.createElement('span');s.className='pc '+(pc.color==='w'?'wp':'bp');s.textContent=CHGL[pc.type];cell.appendChild(s);}
+    if(targets.includes(sq))cell.classList.add(pc?'cap':'mv');
+    cell.onclick=()=>onChessSquare(sq);
+    bd.appendChild(cell);
+  }
+  const turn=$('chessTurn');
+  if(!chessOver) turn.innerHTML = chess.turn()==='w'
+    ? '<span class="dot" style="background:var(--violet)"></span> Your move (White)'
+    : '<span class="dot" style="background:#111"></span> Computer is thinking…';
+}
+function onChessSquare(sq){
+  if(chessOver||chessBusy||!chess||chess.turn()!=='w')return;
+  const pc=chess.get(sq);
+  if(chessSel){
+    const mv=chess.moves({square:chessSel,verbose:true}).find(m=>m.to===sq);
+    if(mv){ chessSel=null; doChessMove({from:mv.from,to:mv.to,promotion:mv.promotion?'q':undefined}); return; }
+    if(pc&&pc.color==='w'){ chessSel=sq; renderChess(); return; }
+    chessSel=null; renderChess(); return;
+  }
+  if(pc&&pc.color==='w'){ chessSel=sq; renderChess(); }
+}
+function doChessMove(move){
+  try{ chess.move(move); }catch(e){ return; }
+  renderChess();
+  if(checkChessEnd())return;
+  chessBusy=true;
+  setTimeout(()=>{ try{ aiChessMove(); } finally { chessBusy=false; } }, 380);
+}
+function aiChessMove(){
+  if(chessOver||!chess)return;
+  const m=bestChessMove(chess,2);
+  if(m){ try{ chess.move({from:m.from,to:m.to,promotion:m.promotion?'q':undefined}); }catch(e){} }
+  chessSel=null; renderChess(); checkChessEnd();
+}
+function evalChess(c){
+  let s=0; for(const row of c.board())for(const cell of row){ if(cell){ const v=CHVAL[cell.type]; s += cell.color==='b'? v : -v; } } return s;
+}
+function bestChessMove(c,depth){
+  const moves=c.moves({verbose:true}); if(!moves.length)return null;
+  let best=null,bs=-Infinity;
+  for(const m of moves){
+    c.move({from:m.from,to:m.to,promotion:m.promotion?'q':undefined});
+    const sc=chessMinimax(c,depth-1,-Infinity,Infinity,false);
+    c.undo();
+    if(sc>bs||(sc===bs&&Math.random()<0.35)){bs=sc;best=m;}
+  }
+  return best;
+}
+function chessMinimax(c,depth,alpha,beta,maxing){
+  if(c.isGameOver()){ if(c.isCheckmate())return maxing?-99999:99999; return 0; }
+  if(depth===0)return evalChess(c);
+  const moves=c.moves({verbose:true});
+  if(maxing){ let v=-Infinity; for(const m of moves){c.move({from:m.from,to:m.to,promotion:m.promotion?'q':undefined});v=Math.max(v,chessMinimax(c,depth-1,alpha,beta,false));c.undo();alpha=Math.max(alpha,v);if(beta<=alpha)break;} return v; }
+  let v=Infinity; for(const m of moves){c.move({from:m.from,to:m.to,promotion:m.promotion?'q':undefined});v=Math.min(v,chessMinimax(c,depth-1,alpha,beta,true));c.undo();beta=Math.min(beta,v);if(beta<=alpha)break;} return v;
+}
+function checkChessEnd(){
+  if(!chess.isGameOver())return false;
+  chessOver=true; chessSel=null;
+  const wb=$('chessWin'); wb.classList.remove('hidden'); $('chessTurn').innerHTML='';
+  if(chess.isCheckmate()) wb.textContent = chess.turn()==='w' ? '\uD83D\uDE05 Checkmate — computer wins' : '\uD83C\uDF89 Checkmate — you win!';
+  else if(chess.isDraw()) wb.textContent='\uD83E\uDD1D Draw';
+  else wb.textContent='Game over';
+  renderChess();
+  return true;
 }
 
 /* STATS */
