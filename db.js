@@ -88,6 +88,16 @@ export async function toggleLike(postId) {
   return data ? db.from('post_likes').delete().eq('post_id', postId).eq('user_id', user.id)
               : db.from('post_likes').insert({ post_id: postId, user_id: user.id });
 }
+export async function setReaction(postId, reaction) {
+  const user = await currentUser();
+  const { data } = await db.from('post_likes').select('reaction').eq('post_id', postId).eq('user_id', user.id).maybeSingle();
+  if (data) {
+    await db.from('post_likes').delete().eq('post_id', postId).eq('user_id', user.id);
+    if ((data.reaction || 'like') === reaction) return;
+  }
+  let { error } = await db.from('post_likes').insert({ post_id: postId, user_id: user.id, reaction });
+  if (error) await db.from('post_likes').insert({ post_id: postId, user_id: user.id });
+}
 export async function addComment(postId, text) {
   const user = await currentUser();
   const { error } = await db.from('comments').insert({ post_id: postId, author_id: user.id, text });
@@ -133,9 +143,15 @@ export async function getOutings() {
   if (error) ({ data } = await db.from('outings').select(lean).order('created_at', { ascending: false }));
   return data ?? [];
 }
-export async function addOuting(text, pill) {
+export async function addOuting(fields) {
   const user = await currentUser();
-  const { error } = await db.from('outings').insert({ author_id: user.id, text, pill });
+  const base = { author_id: user.id, text: fields.text, pill: fields.pill || null };
+  const row = { ...base };
+  if (fields.event_at) row.event_at = fields.event_at;
+  if (fields.location) row.location = fields.location;
+  if (fields.capacity) row.capacity = fields.capacity;
+  let { error } = await db.from('outings').insert(row);
+  if (error) ({ error } = await db.from('outings').insert(base));
   return error;
 }
 export async function toggleJoin(outingId) {
@@ -251,6 +267,16 @@ export async function getAllUsers() {
   const { data } = await db.from('profiles').select('id,name,department,initials,color,avatar_url,is_staff,blocked').order('name');
   return data ?? [];
 }
+export async function getProfile(id) {
+  let { data, error } = await db.from('profiles').select('id,name,initials,color,department,designation,avatar_url,bio').eq('id', id).maybeSingle();
+  if (error) ({ data } = await db.from('profiles').select('id,name,initials,color,department,avatar_url').eq('id', id).maybeSingle());
+  return data;
+}
+export async function getPeople() {
+  let { data, error } = await db.from('profiles').select('id,name,initials,color,department,designation,avatar_url').order('name');
+  if (error) ({ data } = await db.from('profiles').select('id,name,initials,color,department,avatar_url').order('name'));
+  return data ?? [];
+}
 export async function setBlocked(userId, blocked) { return db.from('profiles').update({ blocked }).eq('id', userId); }
 export async function removeUser(userId) {
   await db.from('posts').delete().eq('author_id', userId);
@@ -262,8 +288,12 @@ export async function deletePost(id)    { return db.from('posts').delete().eq('i
 export async function deleteComment(id) { return db.from('comments').delete().eq('id', id); }
 export async function deleteOuting(id)  { return db.from('outings').delete().eq('id', id); }
 export async function getMenuAll() { const { data } = await db.from('menu_items').select('*').order('name'); return data ?? []; }
-export async function addMenuItem(name, price, emoji, description) {
-  return db.from('menu_items').insert({ name, price: parseInt(price) || 0, emoji: emoji || '🍽️', description: description || '' });
+export async function addMenuItem(name, price, emoji, description, image_url) {
+  const base = { name, price: parseInt(price) || 0, emoji: emoji || '🍽️', description: description || '' };
+  const row = image_url ? { ...base, image_url } : base;
+  let { error } = await db.from('menu_items').insert(row);
+  if (error && image_url) ({ error } = await db.from('menu_items').insert(base));
+  return error;
 }
 export async function setMenuAvailable(id, available) { return db.from('menu_items').update({ available }).eq('id', id); }
 export async function deleteMenuItem(id) { return db.from('menu_items').delete().eq('id', id); }
