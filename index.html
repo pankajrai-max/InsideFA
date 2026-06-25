@@ -118,7 +118,7 @@
   .adm .top b{font-size:14px}.adm .top .when{margin-left:auto;font-size:11px;color:var(--ink-soft)}
   .adm .items{font-size:12.5px;color:var(--ink-soft);margin:6px 0 10px;line-height:1.5}
   .status-pill{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.04em}
-  .s-placed{background:#fde9ec;color:#c0314a}.s-preparing{background:#fff1dd;color:#a9730f}.s-ready{background:#e3fbf3;color:#0c8d72}
+  .s-placed{background:#fde9ec;color:#c0314a}.s-preparing{background:#fff1dd;color:#a9730f}.s-ready{background:#e3fbf3;color:#0c8d72}.s-collected{background:#eef0f5;color:#5b6472}.s-cancelled{background:#f1f1f4;color:#8a8a93}
   .adm .row{display:flex;align-items:center;gap:10px}
   .adm .grow{flex:1}.adm .nm{font-weight:700;font-size:14px}.adm .dp{font-size:11.5px;color:var(--ink-soft)}
   .tag-staff{font-size:10px;font-weight:800;color:var(--violet-ink);background:var(--surface-2);padding:2px 7px;border-radius:10px}
@@ -150,8 +150,9 @@
   .online-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:13px;margin-bottom:8px}
   .online-row .grow{flex:1}.online-row .nm{font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px}.online-row .dp{font-size:11.5px;color:var(--ink-soft)}
   .online-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);display:inline-block}
-  .challenge-toast{position:absolute;left:14px;right:14px;top:70px;z-index:45;background:var(--ink);color:#fff;border-radius:14px;padding:13px 15px;box-shadow:0 12px 28px rgba(0,0,0,.3);transform:translateY(-180%);transition:transform .3s cubic-bezier(.2,.9,.3,1.2);font-size:13.5px;line-height:1.4}
-  .challenge-toast.show{transform:translateY(0)}
+  .challenge-toast{position:absolute;left:14px;right:14px;top:66px;z-index:45;background:var(--ink);color:#fff;border-radius:14px;padding:13px 15px;box-shadow:0 12px 28px rgba(0,0,0,.3);font-size:13.5px;line-height:1.4;display:none}
+  .challenge-toast.show{display:block;animation:toastIn .28s ease}
+  @keyframes toastIn{from{transform:translateY(-16px);opacity:0}to{transform:translateY(0);opacity:1}}
   .challenge-toast b{font-weight:800}
   .ct-actions{display:flex;gap:8px;margin-top:10px}
   .challenge-toast .abtn{flex:1;background:rgba(255,255,255,.16);border:none;color:#fff;border-radius:10px;padding:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit}
@@ -189,7 +190,12 @@
       <div id="feedList"><div class="empty">Loading the feed…</div></div>
     </div>
 
-    <div class="screen hidden" id="tab-shop"><div class="eyebrow">Tuck shop · open till 6pm</div><div class="card" id="menuList"></div></div>
+    <div class="screen hidden" id="tab-shop">
+      <div class="eyebrow">Tuck shop · open till 6pm</div>
+      <div class="card" id="menuList"></div>
+      <div class="eyebrow">Your orders</div>
+      <div id="myOrders"><div class="empty">No orders yet.</div></div>
+    </div>
 
     <div class="screen hidden" id="tab-outings">
       <div class="card"><div class="compose"><div class="ava" id="meAva2" style="background:var(--teal)">··</div><textarea id="newOuting" placeholder="Going somewhere? Invite the team…"></textarea></div>
@@ -273,7 +279,7 @@
 <script type="module">
 import { db, signInLink, signInPassword, emailAllowed, signOut, currentUser, ensureProfile, updateProfile, uploadAvatar, uploadMedia,
   getFeed, addPost, toggleLike, addComment, watchFeed, deletePost, deleteComment,
-  getMenu, placeOrder, getOutings, addOuting, toggleJoin, deleteOuting,
+  getMenu, placeOrder, getMyOrders, cancelOrder, getOutings, addOuting, toggleJoin, deleteOuting,
   findOrCreateGame, watchGame, dropConnect4, placeTTT, getLeaderboard, createInvite, acceptInvite, declineInvite,
   inviteUser, getOpenOrders, setOrderStatus, watchOrders, getAllUsers, setBlocked, removeUser,
   getMenuAll, addMenuItem, setMenuAvailable, deleteMenuItem } from './db.js';
@@ -315,6 +321,7 @@ async function onLogin(user){
   $('navAdmin').style.display=isStaff?'flex':'none';
   await Promise.all([loadFeed(),loadMenu(),loadOutings(),loadLeaderboard(),loadStats()]);
   watchFeed(()=>loadFeed()); startPresence(); watchChallenges();
+  db.channel('myorders:'+me.id).on('postgres_changes',{event:'*',schema:'public',table:'orders',filter:'user_id=eq.'+me.id},()=>{if(current==='shop')loadMyOrders();}).subscribe();
   if(isStaff){ loadAdmin(); watchOrders(()=>{ if(current==='admin')loadOrders(); }); }
 }
 $('signoutBtn').onclick=async()=>{ await signOut(); location.reload(); };
@@ -462,11 +469,24 @@ function openCheckout(){
 async function submitOrder(){
   const total=cartSum(),items=cartList();const {error}=await placeOrder(items);
   if(error){$('sheetBody').innerHTML='<div class="grab"></div><div class="done"><h3 style="text-align:center">Could not place order</h3><div class="sub" style="text-align:center">'+esc(error.message)+'</div><button class="btn" id="cl">Close</button></div>';$('cl').onclick=()=>$('sheet').classList.remove('open');return;}
-  cart={};renderMenu();updateCart();loadStats();
+  cart={};renderMenu();updateCart();loadStats();loadMyOrders();
   $('sheetBody').innerHTML=`<div class="grab"></div><div class="done"><div class="tick">✓</div><h3 style="text-align:center">Order placed</h3><div class="sub" style="text-align:center">The tuck shop got your ₹${total} order. You'll get a ping when it's ready.</div><button class="btn" id="cl">Done</button></div>`;
   $('cl').onclick=()=>$('sheet').classList.remove('open');
 }
 $('sheet').addEventListener('click',e=>{if(e.target.id==='sheet')$('sheet').classList.remove('open');});
+function timeAgo(ts){const s=Math.floor((Date.now()-new Date(ts).getTime())/1000);if(s<60)return 'just now';const m=Math.floor(s/60);if(m<60)return m+'m ago';const hh=Math.floor(m/60);if(hh<24)return hh+'h ago';return Math.floor(hh/24)+'d ago';}
+async function loadMyOrders(){
+  const box=$('myOrders'); if(!box)return;
+  const orders=await getMyOrders();
+  if(!orders.length){box.innerHTML='<div class="empty">No orders yet. Your tuck-shop orders will show here.</div>';return;}
+  const lbl={placed:'Order placed',preparing:'Being prepared',ready:'Ready to collect',collected:'Collected',cancelled:'Cancelled'};
+  box.innerHTML=orders.map(o=>{
+    const items=(o.order_items||[]).map(i=>`${i.qty}× ${esc(i.name)}`).join(', ');
+    const canCancel=o.status==='placed'||o.status==='preparing';
+    return `<div class="adm"><div class="top"><b>₹${o.total}</b><span class="status-pill s-${o.status}">${lbl[o.status]||o.status}</span><span class="when">${timeAgo(o.created_at)}</span></div><div class="items">${items||'—'}</div>${canCancel?`<button class="abtn danger" data-cancel="${o.id}">Cancel order</button>`:''}</div>`;
+  }).join('');
+  box.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=async()=>{if(confirm('Cancel this order?')){const r=await cancelOrder(b.dataset.cancel);if(r&&r.error){alert('Could not cancel: '+r.error.message);return;}loadMyOrders();}});
+}
 
 /* OUTINGS */
 async function loadOutings(){
@@ -668,6 +688,7 @@ $('nav').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
   $('tab-'+current).scrollTop=0; updateCart();
   if(current==='admin'&&isStaff)loadAdmin();
   if(current==='play')renderOnline();
+  if(current==='shop')loadMyOrders();
 });
 </script>
 </body>
