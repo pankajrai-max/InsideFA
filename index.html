@@ -371,6 +371,7 @@ let me=null, myProfile=null, isStaff=false, current='feed';
 let menuCache=[], cart={};
 let game=null, myNum=null, gameSub=null, challengeCount=0;
 let _myPosts=[], _gridMode='all';
+let _feed=[], _feedTimer=null;
 const REACTS=[['like','❤️'],['celebrate','🎉'],['support','👏'],['funny','😂']];
 function fmtWhen(ts){const d=new Date(ts);if(isNaN(d))return '';return d.toLocaleString([], {weekday:'short',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'});}
 const COLORS=['#6C4DF2','#13C2A3','#FFB23E','#FF6B6B','#4A32C0','#0EA5E9'];
@@ -405,7 +406,7 @@ async function onLogin(user){
   refreshMeHeader();
   $('navAdmin').style.display=isStaff?'flex':'none';
   await Promise.all([loadFeed(),loadMenu(),loadOutings(),loadLeaderboard(),loadStats(),loadMeGrid()]);
-  watchFeed(()=>loadFeed()); startPresence(); watchChallenges();
+  watchFeed(()=>scheduleFeed()); startPresence(); watchChallenges();
   db.channel('myorders:'+me.id).on('postgres_changes',{event:'*',schema:'public',table:'orders',filter:'user_id=eq.'+me.id},()=>{if(current==='shop')loadMyOrders();}).subscribe();
   if(isStaff){ loadAdmin(); watchOrders(()=>{ if(current==='admin')loadOrders(); }); }
 }
@@ -548,9 +549,10 @@ async function loadFeed(){
     db.from('comments').select('id,post_id,text,author_id').in('post_id',ids).order('created_at')
   ]);
   const P={}; (pf.data||[]).forEach(x=>P[x.id]=x);
-  const L={}; (lk.data||[]).forEach(x=>{(L[x.post_id]=L[x.post_id]||[]).push({user_id:x.user_id});});
+  const L={}; (lk.data||[]).forEach(x=>{(L[x.post_id]=L[x.post_id]||[]).push({user_id:x.user_id,reaction:x.reaction});});
   const CM={}; (cm.data||[]).forEach(x=>{(CM[x.post_id]=CM[x.post_id]||[]).push({id:x.id,text:x.text,author:{name:(P[x.author_id]||{}).name}});});
   posts.forEach(p=>{p.author=P[p.author_id]||{};p.post_likes=L[p.id]||[];p.comments=CM[p.id]||[];});
+  _feed=posts;
   $('feedList').innerHTML=posts.map(p=>{
     const a=p.author||{}, ini=a.initials||initialsOf(a.name), col=a.color||colorFor(a.name);
     const likes=p.post_likes||[], cmts=p.comments||[];
@@ -562,22 +564,51 @@ async function loadFeed(){
         ${isStaff?`<button class="del" data-delpost="${p.id}" title="Remove post">🗑</button>`:''}</div>
       <p>${tagify(esc(p.text))}</p>${p.media_url?(p.media_type==='video'?`<video class="post-media" src="${p.media_url}" controls preload="metadata"></video>`:`<img class="post-media" src="${p.media_url}"/>`):(p.media_emoji?`<div class="media">${p.media_emoji}</div>`:'')}
       <div class="acts">
-        <div class="reacts">${REACTS.map(([k,e])=>`<button class="react ${myR===k?'on':''}" data-react="${p.id}" data-rk="${k}">${e}${rc[k]?`<i>${rc[k]}</i>`:''}</button>`).join('')}</div>
-        <span class="cc">💬 ${cmts.length}</span></div>
-      <div class="comments">
+        <div class="reacts" id="reacts-${p.id}">${REACTS.map(([k,e])=>`<button class="react ${myR===k?'on':''}" data-react="${p.id}" data-rk="${k}">${e}${rc[k]?`<i>${rc[k]}</i>`:''}</button>`).join('')}</div>
+        <span class="cc" id="cc-${p.id}">💬 ${cmts.length}</span></div>
+      <div class="comments" id="cms-${p.id}">
         ${cmts.map(c=>`<div class="cmt"><span><b>${esc(c.author?.name||'Someone')}:</b> ${esc(c.text)}</span>${isStaff?`<button class="del" data-delcmt="${c.id}">✕</button>`:''}</div>`).join('')}
         <div class="cmt-row"><input placeholder="Add a comment…" data-ci="${p.id}"><button class="mini" data-send="${p.id}">Send</button></div>
       </div></div></div>`;
   }).join('');
   const F=$('feedList');
-  F.querySelectorAll('[data-react]').forEach(b=>b.onclick=async()=>{await setReaction(b.dataset.react,b.dataset.rk);loadFeed();});
+  F.querySelectorAll('[data-react]').forEach(b=>b.onclick=()=>onReact(b.dataset.react,b.dataset.rk));
   F.querySelectorAll('[data-send]').forEach(b=>b.onclick=()=>sendComment(b.dataset.send));
   F.querySelectorAll('[data-ci]').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')sendComment(i.dataset.ci);}));
   F.querySelectorAll('[data-delpost]').forEach(b=>b.onclick=async()=>{if(confirm('Remove this post?')){await deletePost(b.dataset.delpost);loadFeed();}});
   F.querySelectorAll('[data-delcmt]').forEach(b=>b.onclick=async()=>{await deleteComment(b.dataset.delcmt);loadFeed();});
   F.querySelectorAll('[data-profile]').forEach(el=>el.onclick=()=>openProfile(el.dataset.profile));
 }
-async function sendComment(pid){const i=document.querySelector(`[data-ci="${pid}"]`);if(!i.value.trim())return;const err=await addComment(pid,i.value.trim());if(err){alert('Could not comment: '+err.message);return;}i.value='';loadFeed();}
+function reactsHTML(p){
+  const likes=p.post_likes||[];
+  const myR=(likes.find(l=>l.user_id===me.id)||{}).reaction||(likes.some(l=>l.user_id===me.id)?'like':null);
+  const rc={}; likes.forEach(l=>{const r=l.reaction||'like';rc[r]=(rc[r]||0)+1;});
+  return REACTS.map(([k,e])=>`<button class="react ${myR===k?'on':''}" data-react="${p.id}" data-rk="${k}">${e}${rc[k]?`<i>${rc[k]}</i>`:''}</button>`).join('');
+}
+function onReact(postId,rk){
+  const p=_feed.find(x=>x.id===postId); if(!p)return;
+  p.post_likes=p.post_likes||[];
+  const mine=p.post_likes.find(l=>l.user_id===me.id);
+  const cur=mine?(mine.reaction||'like'):null;
+  p.post_likes=p.post_likes.filter(l=>l.user_id!==me.id);
+  if(cur!==rk)p.post_likes.push({user_id:me.id,reaction:rk});
+  const box=document.getElementById('reacts-'+postId);
+  if(box){box.innerHTML=reactsHTML(p);box.querySelectorAll('[data-react]').forEach(b=>b.onclick=()=>onReact(b.dataset.react,b.dataset.rk));}
+  setReaction(postId,rk).catch(()=>{});
+}
+function sendComment(pid){
+  const i=document.querySelector(`[data-ci="${pid}"]`); if(!i)return;
+  const text=i.value.trim(); if(!text)return; i.value='';
+  const nm=(myProfile&&myProfile.name)||'You';
+  const p=_feed.find(x=>x.id===pid);
+  if(p){ p.comments=p.comments||[]; p.comments.push({id:null,text,author:{name:nm}});
+    const cms=document.getElementById('cms-'+pid);
+    if(cms){const row=cms.querySelector('.cmt-row');const d=document.createElement('div');d.className='cmt';d.innerHTML=`<span><b>${esc(nm)}:</b> ${esc(text)}</span>`;row?cms.insertBefore(d,row):cms.appendChild(d);}
+    const cc=document.getElementById('cc-'+pid); if(cc)cc.textContent='💬 '+p.comments.length;
+  }
+  addComment(pid,text).catch(()=>{});
+}
+function scheduleFeed(){ clearTimeout(_feedTimer); _feedTimer=setTimeout(()=>loadFeed(),500); }
 let pendingMedia=null;
 $('addImg').onclick=()=>$('imgInput').click();
 $('addVid').onclick=()=>$('vidInput').click();
