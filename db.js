@@ -206,10 +206,18 @@ export async function inviteUser(email) {
   return await signInLink(email);
 }
 export async function getOpenOrders() {
-  const { data } = await db.from('orders')
-    .select('*, user:profiles(name,initials,color), order_items(name,qty,price_each)')
+  const { data: orders } = await db.from('orders')
+    .select('*, order_items(name,qty,price_each)')
     .neq('status', 'collected').order('created_at');
-  return data ?? [];
+  const list = orders ?? [];
+  const ids = [...new Set(list.map(o => o.user_id))];
+  const P = {};
+  if (ids.length) {
+    const { data: profs } = await db.from('profiles').select('id,name,initials,color').in('id', ids);
+    (profs || []).forEach(p => P[p.id] = p);
+  }
+  list.forEach(o => o.user = P[o.user_id] || {});
+  return list;
 }
 export async function setOrderStatus(orderId, status) { return db.from('orders').update({ status }).eq('id', orderId); }
 export function watchOrders(onChange) {
