@@ -147,6 +147,15 @@
   .media-preview .rm{position:absolute;top:8px;right:8px;border:none;background:rgba(0,0,0,.6);color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:14px}
   .post-media{width:100%;border-radius:14px;margin-bottom:12px;display:block;max-height:440px;object-fit:cover}
   video.post-media{object-fit:contain;background:#000;max-height:480px}
+  .online-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:13px;margin-bottom:8px}
+  .online-row .grow{flex:1}.online-row .nm{font-weight:700;font-size:14px;display:flex;align-items:center;gap:7px}.online-row .dp{font-size:11.5px;color:var(--ink-soft)}
+  .online-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);display:inline-block}
+  .challenge-toast{position:absolute;left:14px;right:14px;top:70px;z-index:45;background:var(--ink);color:#fff;border-radius:14px;padding:13px 15px;box-shadow:0 12px 28px rgba(0,0,0,.3);transform:translateY(-180%);transition:transform .3s cubic-bezier(.2,.9,.3,1.2);font-size:13.5px;line-height:1.4}
+  .challenge-toast.show{transform:translateY(0)}
+  .challenge-toast b{font-weight:800}
+  .ct-actions{display:flex;gap:8px;margin-top:10px}
+  .challenge-toast .abtn{flex:1;background:rgba(255,255,255,.16);border:none;color:#fff;border-radius:10px;padding:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit}
+  .challenge-toast .abtn.go{background:var(--teal)}
 </style>
 </head>
 <body>
@@ -190,7 +199,9 @@
 
     <div class="screen hidden" id="tab-play">
       <div id="gameLobby">
-        <div class="eyebrow">Play with the team</div>
+        <div class="eyebrow">Online now — tap to challenge</div>
+        <div id="onlineList"><div class="empty">Loading…</div></div>
+        <div class="eyebrow">Quick match</div>
         <div class="game-pick">
           <div class="game-card" data-game="connect4"><div class="em">🔴</div><b>Connect Four</b><small>2 players · live</small></div>
           <div class="game-card" data-game="ttt"><div class="em">⭕</div><b>Tic-Tac-Toe</b><small>2 players · live</small></div>
@@ -254,6 +265,7 @@
       <button data-tab="admin" id="navAdmin" style="display:none"><span class="ni">🛡️</span>Admin</button>
     </div>
 
+    <div class="challenge-toast" id="challengeToast"></div>
     <div class="sheet-bg" id="sheet"><div class="sheet" id="sheetBody"></div></div>
   </div>
 </div>
@@ -262,7 +274,7 @@
 import { db, signInLink, signInPassword, emailAllowed, signOut, currentUser, ensureProfile, updateProfile, uploadAvatar, uploadMedia,
   getFeed, addPost, toggleLike, addComment, watchFeed, deletePost, deleteComment,
   getMenu, placeOrder, getOutings, addOuting, toggleJoin, deleteOuting,
-  findOrCreateGame, watchGame, dropConnect4, placeTTT, getLeaderboard,
+  findOrCreateGame, watchGame, dropConnect4, placeTTT, getLeaderboard, createInvite, acceptInvite, declineInvite,
   inviteUser, getOpenOrders, setOrderStatus, watchOrders, getAllUsers, setBlocked, removeUser,
   getMenuAll, addMenuItem, setMenuAvailable, deleteMenuItem } from './db.js';
 
@@ -302,7 +314,7 @@ async function onLogin(user){
   $('meNameInput').value=prof.name||''; $('meRole').textContent=prof.department||'Team';
   $('navAdmin').style.display=isStaff?'flex':'none';
   await Promise.all([loadFeed(),loadMenu(),loadOutings(),loadLeaderboard(),loadStats()]);
-  watchFeed(()=>loadFeed());
+  watchFeed(()=>loadFeed()); startPresence(); watchChallenges();
   if(isStaff){ loadAdmin(); watchOrders(()=>{ if(current==='admin')loadOrders(); }); }
 }
 $('signoutBtn').onclick=async()=>{ await signOut(); location.reload(); };
@@ -491,6 +503,53 @@ async function loadLeaderboard(){
   $('leaderboard').innerHTML=(rows.length?rows:[{name:'No games yet',wins:0}]).map((r,i)=>
     `<div class="lead-row"><span class="rk">${i+1}</span><span class="name">${esc(r.name)}${r.name===myProfile?.name?' ⭐':''}</span><span class="pts">${r.wins||0} wins</span></div>`).join('');
 }
+function go(tab){const b=document.querySelector('.nav [data-tab="'+tab+'"]');if(b)b.click();}
+let lobbyCh=null, onlineUsers=[];
+function startPresence(){
+  if(lobbyCh)return;
+  lobbyCh=db.channel('lobby',{config:{presence:{key:me.id}}});
+  lobbyCh.on('presence',{event:'sync'},()=>{
+    const st=lobbyCh.presenceState(); const seen={}; onlineUsers=[];
+    Object.values(st).flat().forEach(m=>{if(m&&m.id&&!seen[m.id]){seen[m.id]=1;onlineUsers.push(m);}});
+    if(current==='play')renderOnline();
+  });
+  lobbyCh.subscribe(async s=>{if(s==='SUBSCRIBED'){await lobbyCh.track({id:me.id,name:myProfile.name,initials:myProfile.initials||initialsOf(myProfile.name),color:myProfile.color||colorFor(myProfile.name),dept:myProfile.department||'Team'});}});
+}
+function renderOnline(){
+  const box=$('onlineList'); if(!box)return;
+  const others=onlineUsers.filter(u=>u.id!==me.id);
+  if(!others.length){box.innerHTML='<div class="empty">No teammates online right now. When a colleague logs in, they appear here to challenge.</div>';return;}
+  box.innerHTML=others.map(u=>`<div class="online-row"><div class="ava" style="width:36px;height:36px;font-size:13px;background:${u.color||'#6C4DF2'}">${u.initials||'··'}</div><div class="grow"><div class="nm">${esc(u.name)}<span class="online-dot"></span></div><div class="dp">${esc(u.dept||'Team')}</div></div><button class="abtn go" data-ch="${u.id}" data-nm="${esc(u.name)}">Challenge</button></div>`).join('');
+  box.querySelectorAll('[data-ch]').forEach(b=>b.onclick=()=>askGameType(b.dataset.ch,b.dataset.nm));
+}
+function askGameType(targetId,name){
+  $('sheetBody').innerHTML=`<div class="grab"></div><h3>Challenge ${esc(name)}</h3><div class="sub">Pick a game</div><button class="btn" data-g="connect4">🔴 Connect Four</button><button class="btn ghost" style="margin-top:10px" data-g="ttt">⭕ Tic-Tac-Toe</button>`;
+  $('sheet').classList.add('open');
+  $('sheetBody').querySelectorAll('[data-g]').forEach(b=>b.onclick=async()=>{$('sheet').classList.remove('open');await sendChallenge(targetId,b.dataset.g);});
+}
+async function sendChallenge(targetId,type){
+  const g=await createInvite(targetId,type); if(!g)return;
+  game=g; myNum=1; showSub(type==='ttt'?'gameTTT':'gameC4');
+  if(gameSub)db.removeChannel(gameSub);
+  gameSub=watchGame(g.id,gg=>{game=gg;type==='ttt'?renderTTT():renderC4();});
+  type==='ttt'?renderTTT():renderC4();
+}
+function watchChallenges(){
+  db.channel('chal:'+me.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'games',filter:'player2_id=eq.'+me.id},async p=>{
+      const g=p.new; if(g.status!=='waiting')return;
+      const {data:ch}=await db.from('profiles').select('name').eq('id',g.player1_id).maybeSingle();
+      showIncoming(g, ch?ch.name:'Someone');
+    }).subscribe();
+}
+function showIncoming(g,name){
+  const t=$('challengeToast');
+  t.innerHTML=`<div><b>${esc(name)}</b> challenges you to <b>${g.type==='ttt'?'Tic-Tac-Toe':'Connect Four'}</b></div><div class="ct-actions"><button class="abtn go" id="acceptCh">Accept</button><button class="abtn" id="declineCh">Decline</button></div>`;
+  t.classList.add('show');
+  $('acceptCh').onclick=async()=>{t.classList.remove('show');const gg=await acceptInvite(g.id);if(!gg)return;go('play');game=gg;myNum=2;const type=gg.type;showSub(type==='ttt'?'gameTTT':'gameC4');if(gameSub)db.removeChannel(gameSub);gameSub=watchGame(gg.id,x=>{game=x;type==='ttt'?renderTTT():renderC4();});type==='ttt'?renderTTT():renderC4();};
+  $('declineCh').onclick=async()=>{t.classList.remove('show');await declineInvite(g.id);};
+  setTimeout(()=>{t.classList.remove('show');},15000);
+}
 document.querySelectorAll('[data-game]').forEach(c=>c.onclick=()=>openGame(c.dataset.game));
 document.querySelectorAll('[data-leave]').forEach(b=>b.onclick=leaveGame);
 document.querySelector('[data-newc4]').onclick=()=>startLive('connect4');
@@ -511,7 +570,7 @@ async function startLive(type){
 function statusText(t,who){
   const tu=$(t.turnEl),wb=$(t.winEl);
   if(game.status==='waiting'){tu.innerHTML='⏳ Waiting for an opponent to join…';wb.classList.add('hidden');}
-  else if(game.status==='finished'){wb.classList.remove('hidden');wb.textContent=game.winner_id?(game.winner_id===me.id?'🎉 You win!':'😅 You lost'):'🤝 Draw';tu.innerHTML='';}
+  else if(game.status==='finished'){wb.classList.remove('hidden');tu.innerHTML='';const empty=game.board.flat().every(v=>v===0);wb.textContent=(!game.winner_id&&empty)?'🚫 Challenge declined':game.winner_id?(game.winner_id===me.id?'🎉 You win!':'😅 You lost'):'🤝 Draw';}
   else{const mine=game.turn===myNum;tu.innerHTML=`<span class="dot" style="background:${who}"></span> ${mine?'Your turn':"Opponent's turn"}`;wb.classList.add('hidden');}
 }
 function renderC4(){
@@ -608,6 +667,7 @@ $('nav').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
   $('nav').querySelectorAll('button').forEach(b=>b.classList.toggle('active',b===btn));
   $('tab-'+current).scrollTop=0; updateCart();
   if(current==='admin'&&isStaff)loadAdmin();
+  if(current==='play')renderOnline();
 });
 </script>
 </body>
