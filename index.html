@@ -178,6 +178,11 @@
   .odetails .dot{opacity:.45}
   .join:disabled{opacity:.5;cursor:not-allowed}
   .menu-item .pic{overflow:hidden}.menu-item .pic img{width:100%;height:100%;object-fit:cover}
+  .ava-wrap{position:relative;display:inline-block;margin-bottom:6px}
+  .ava-wrap .ava{margin:0}
+  .edit-ava{position:absolute;right:-3px;bottom:-3px;width:34px;height:34px;border-radius:50%;border:3px solid var(--surface);background:var(--violet);color:#fff;font-size:15px;display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);font-family:inherit}
+  .me-name{font-size:20px;font-weight:800;color:var(--ink)}
+  .me-role{font-size:13.5px;color:var(--ink-soft);margin-top:2px}
 </style>
 </head>
 <body>
@@ -259,22 +264,19 @@
 
     <div class="screen hidden" id="tab-me">
       <div class="prof">
-        <div class="ava" id="meAvaBig">··</div>
+        <div class="ava-wrap">
+          <div class="ava" id="meAvaBig">··</div>
+          <button class="edit-ava" id="changePhoto" aria-label="Change photo" title="Change photo">✎</button>
+        </div>
         <input type="file" id="photoInput" accept="image/*" hidden/>
-        <button class="photo-btn" id="changePhoto">Change photo</button>
+        <div class="me-name" id="meNameShow">—</div>
+        <div class="me-role" id="meRoleShow">—</div>
       </div>
       <div class="stats"><div class="stat"><b id="sPosts">0</b><small>POSTS</small></div><div class="stat"><b id="sOrders">0</b><small>ORDERS</small></div><div class="stat"><b id="sWins">0</b><small>WINS</small></div></div>
-      <div class="eyebrow">Your profile</div>
-      <div class="card" style="padding:14px">
-        <div class="field"><label>Name</label><input id="meNameInput" placeholder="Your name"/></div>
-        <div class="field"><label>Designation</label><input id="meDesigInput" placeholder="e.g. Software Engineer"/></div>
-        <div class="field"><label>Department</label><input id="meDeptInput" placeholder="e.g. Engineering"/></div>
-        <div class="field"><label>Bio</label><textarea id="meBioInput" rows="3" placeholder="Tell the team a bit about you…"></textarea></div>
-      </div>
-      <button class="btn" id="saveProfile">Save changes</button>
-      <div id="profMsg" style="text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:10px"></div>
-      <button class="abtn" id="browsePeople" style="width:100%;margin-top:14px;padding:13px;font-size:14px">Browse colleagues</button>
+      <button class="btn" id="openEdit">Update profile</button>
+      <button class="abtn" id="browsePeople" style="width:100%;margin-top:12px;padding:13px;font-size:14px">Browse colleagues</button>
       <button class="signout" id="signoutBtn">Log out</button>
+      <div id="profMsg" style="text-align:center;font-size:12.5px;color:var(--ink-soft);margin-top:10px"></div>
     </div>
 
     <div class="screen hidden" id="tab-admin">
@@ -348,7 +350,7 @@ async function onLogin(user){
   myProfile=prof; isStaff=!!prof.is_staff;
   $('login').classList.add('hidden'); $('app').classList.remove('hidden');
   setAva($('meAva1'),prof); setAva($('meAva2'),prof); setAva($('meAvaBig'),prof);
-  $('meNameInput').value=prof.name||''; $('meDesigInput').value=prof.designation||''; $('meDeptInput').value=prof.department||''; $('meBioInput').value=prof.bio||'';
+  refreshMeHeader();
   $('navAdmin').style.display=isStaff?'flex':'none';
   await Promise.all([loadFeed(),loadMenu(),loadOutings(),loadLeaderboard(),loadStats()]);
   watchFeed(()=>loadFeed()); startPresence(); watchChallenges();
@@ -367,16 +369,35 @@ $('photoInput').onchange=async(e)=>{
   myProfile.avatar_url=url; setAva($('meAvaBig'),myProfile); setAva($('meAva1'),myProfile); setAva($('meAva2'),myProfile);
   $('profMsg').textContent='✓ Photo updated'; loadFeed(); loadOutings();
 };
-$('saveProfile').onclick=async()=>{
-  const name=$('meNameInput').value.trim(); if(!name){$('profMsg').style.color='var(--coral)';$('profMsg').textContent='Name cannot be empty.';return;}
+function refreshMeHeader(){const p=myProfile||{};$('meNameShow').textContent=p.name||'—';$('meRoleShow').textContent=[p.designation,p.department].filter(Boolean).join(' · ')||'Team';}
+$('openEdit').onclick=openEditProfile;
+function openEditProfile(){
+  const p=myProfile||{};
+  $('sheet').classList.add('open');
+  $('sheetBody').innerHTML=`<div class="grab"></div><h3>Update profile</h3>
+    <div class="field"><label>Name</label><input id="edName" placeholder="Your name"/></div>
+    <div class="field"><label>Designation</label><input id="edDesig" placeholder="e.g. Software Engineer"/></div>
+    <div class="field"><label>Department</label><input id="edDept" placeholder="e.g. Engineering"/></div>
+    <div class="field"><label>Bio</label><textarea id="edBio" rows="3" placeholder="Tell the team a bit about you…"></textarea></div>
+    <div id="edMsg" style="text-align:center;font-size:12.5px;color:var(--ink-soft);margin:8px 0"></div>
+    <button class="btn" id="edSave">Save changes</button>`;
+  $('edName').value=p.name||''; $('edDesig').value=p.designation||''; $('edDept').value=p.department||''; $('edBio').value=p.bio||'';
+  $('edSave').onclick=saveEdit;
+}
+async function saveEdit(){
+  const name=$('edName').value.trim(), msg=$('edMsg');
+  if(!name){msg.style.color='var(--coral)';msg.textContent='Name cannot be empty.';return;}
   const ini=name.slice(0,2).toUpperCase();
-  const fields={name,initials:ini,designation:$('meDesigInput').value.trim(),department:$('meDeptInput').value.trim()||'Team',bio:$('meBioInput').value.trim()};
+  const fields={name,initials:ini,designation:$('edDesig').value.trim(),department:$('edDept').value.trim()||'Team',bio:$('edBio').value.trim()};
   const err=await updateProfile(fields);
-  if(err){$('profMsg').style.color='var(--coral)';$('profMsg').textContent='Could not save: '+(err.message||err);return;}
+  if(err){msg.style.color='var(--coral)';msg.textContent='Could not save: '+(err.message||err);return;}
   Object.assign(myProfile,fields);
   setAva($('meAvaBig'),myProfile); setAva($('meAva1'),myProfile); setAva($('meAva2'),myProfile);
-  $('profMsg').style.color='var(--teal)';$('profMsg').textContent='✓ Saved'; loadFeed(); loadOutings();
-};
+  refreshMeHeader();
+  msg.style.color='var(--teal)';msg.textContent='✓ Saved';
+  loadFeed(); loadOutings();
+  setTimeout(()=>$('sheet').classList.remove('open'),650);
+}
 async function openProfile(userId){
   $('sheet').classList.add('open'); $('sheetBody').innerHTML='<div class="grab"></div><div class="empty">Loading…</div>';
   const p=await getProfile(userId);
