@@ -144,7 +144,7 @@ function emptyBoard(type) {
 export async function findOrCreateGame(type = 'connect4') {
   const user = await currentUser();
   const { data: open } = await db.from('games')
-    .select('*').eq('type', type).eq('status', 'waiting').neq('player1_id', user.id).limit(1).maybeSingle();
+    .select('*').eq('type', type).eq('status', 'waiting').is('player2_id', null).neq('player1_id', user.id).limit(1).maybeSingle();
   if (open) {
     const { data } = await db.from('games').update({ player2_id: user.id, status: 'playing' }).eq('id', open.id).select().single();
     return data;
@@ -152,6 +152,20 @@ export async function findOrCreateGame(type = 'connect4') {
   const { data } = await db.from('games')
     .insert({ type, player1_id: user.id, status: 'waiting', board: emptyBoard(type) }).select().single();
   return data;
+}
+export async function createInvite(targetId, type = 'connect4') {
+  const user = await currentUser();
+  const { data } = await db.from('games')
+    .insert({ type, player1_id: user.id, player2_id: targetId, status: 'waiting', board: emptyBoard(type) })
+    .select().single();
+  return data;
+}
+export async function acceptInvite(gameId) {
+  const { data } = await db.from('games').update({ status: 'playing' }).eq('id', gameId).select().single();
+  return data;
+}
+export async function declineInvite(gameId) {
+  return db.from('games').update({ status: 'finished' }).eq('id', gameId); // empty board + finished = "declined"
 }
 export function watchGame(gameId, onChange) {
   return db.channel('game:' + gameId)
