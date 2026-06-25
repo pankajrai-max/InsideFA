@@ -88,6 +88,10 @@ export async function toggleLike(postId) {
   return data ? db.from('post_likes').delete().eq('post_id', postId).eq('user_id', user.id)
               : db.from('post_likes').insert({ post_id: postId, user_id: user.id });
 }
+export async function getUserPosts(userId) {
+  const { data } = await db.from('posts').select('id,text,media_url,media_type,media_emoji,created_at').eq('author_id', userId).order('created_at', { ascending: false });
+  return data ?? [];
+}
 export async function setReaction(postId, reaction) {
   const user = await currentUser();
   const { data } = await db.from('post_likes').select('reaction').eq('post_id', postId).eq('user_id', user.id).maybeSingle();
