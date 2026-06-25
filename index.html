@@ -180,13 +180,14 @@
   .menu-item .pic{overflow:hidden}.menu-item .pic img{width:100%;height:100%;object-fit:cover}
   .ava-wrap{position:relative;display:inline-block;margin-bottom:6px}
   .ava-wrap .ava{margin:0}
-  .edit-ava{position:absolute;right:-3px;bottom:-3px;width:34px;height:34px;border-radius:50%;border:3px solid var(--surface);background:var(--violet);color:#fff;font-size:15px;display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);font-family:inherit}
+  .edit-ava{position:absolute;right:-1px;bottom:-1px;width:26px;height:26px;border-radius:50%;border:2.5px solid var(--surface);background:var(--violet);color:#fff;font-size:12px;display:grid;place-items:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);font-family:inherit}
   .me-name{font-size:20px;font-weight:800;color:var(--ink)}
   .me-role{font-size:13.5px;color:var(--ink-soft);margin-top:2px}
-  .ig-head{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 12px}
-  .ig-handle{font-size:17px;font-weight:800;color:var(--ink)}
+  .ig-head{display:flex;align-items:center;justify-content:flex-end;padding:2px 4px 6px}
   .ig-menu{background:none;border:none;font-size:22px;color:var(--ink);cursor:pointer;line-height:1;padding:0 4px}
-  .ig-top{display:flex;align-items:center;gap:18px;padding:2px 4px 10px}
+  .ig-top{display:flex;align-items:center;gap:20px;padding:2px 4px 10px}
+  .ig-top .ava-wrap{flex:none}
+  .ig-top .ava{width:78px;height:78px;font-size:27px}
   .ig-stats{flex:1;display:flex;text-align:center}
   .igs{flex:1;background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0}
   .igs b{display:block;font-size:18px;font-weight:800;color:var(--ink)}
@@ -292,7 +293,7 @@
     </div>
 
     <div class="screen hidden" id="tab-me">
-      <div class="ig-head"><div class="ig-handle" id="meHandle">—</div><button class="ig-menu" id="meMenu" aria-label="Menu">☰</button></div>
+      <div class="ig-head"><button class="ig-menu" id="meMenu" aria-label="Menu">☰</button></div>
       <div class="ig-top">
         <div class="ava-wrap"><div class="ava" id="meAvaBig">··</div><button class="edit-ava" id="changePhoto" aria-label="Change photo" title="Change photo">✎</button></div>
         <input type="file" id="photoInput" accept="image/*" hidden/>
@@ -405,7 +406,7 @@ $('photoInput').onchange=async(e)=>{
   myProfile.avatar_url=url; setAva($('meAvaBig'),myProfile); setAva($('meAva1'),myProfile); setAva($('meAva2'),myProfile);
   $('profMsg').textContent='✓ Photo updated'; loadFeed(); loadOutings();
 };
-function refreshMeHeader(){const p=myProfile||{};$('meNameShow').textContent=p.name||'—';$('meRoleShow').textContent=[p.designation,p.department].filter(Boolean).join(' · ')||'Team';$('meHandle').textContent=p.name||'Me';const b=$('meBioShow');if(b){b.textContent=p.bio||'';b.style.display=p.bio?'block':'none';}}
+function refreshMeHeader(){const p=myProfile||{};$('meNameShow').textContent=p.name||'—';$('meRoleShow').textContent=[p.designation,p.department].filter(Boolean).join(' · ')||'Team';const b=$('meBioShow');if(b){b.textContent=p.bio||'';b.style.display=p.bio?'block':'none';}}
 $('openEdit').onclick=openEditProfile;
 function openEditProfile(){
   const p=myProfile||{};
