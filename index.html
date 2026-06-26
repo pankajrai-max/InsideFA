@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 <title>InsideFA — your office, all in one place</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{--bg:#F6F4FB;--surface:#FFFFFF;--surface-2:#F1EDFB;--ink:#211B2E;--ink-soft:#6B6480;--line:#E8E3F4;--violet:#6C4DF2;--violet-ink:#4A32C0;--amber:#FFB23E;--teal:#13C2A3;--coral:#FF6B6B;--red:#FF5D6C;--yellow:#FFC83D;--radius:18px;--shadow:0 10px 30px rgba(64,45,140,.10);--tap:0 2px 0 rgba(74,50,192,.18)}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;height:100%}
-  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);display:flex;justify-content:center;-webkit-font-smoothing:antialiased;height:100vh;height:100dvh;overflow:hidden}
+  body{font-family:'Inter',system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);display:flex;justify-content:center;-webkit-font-smoothing:antialiased;height:100vh;height:100dvh;overflow:hidden}
   .phone{width:100%;max-width:460px;height:100vh;height:100dvh;overflow:hidden;background:var(--bg);position:relative;display:flex;flex-direction:column;box-shadow:0 0 60px rgba(64,45,140,.12)}
   @media (min-width:520px){.phone{border-left:1px solid var(--line);border-right:1px solid var(--line)}}
   .login{position:absolute;inset:0;z-index:60;background:linear-gradient(160deg,#6C4DF2,#3a268f);color:#fff;display:flex;flex-direction:column;justify-content:center;padding:34px;text-align:center}
@@ -169,9 +170,9 @@
   .name-link{cursor:pointer}
   .nav button .ni{padding:3px 14px;border-radius:999px;transition:background .15s}
   .nav button.active .ni{background:var(--surface-2)}
-  .acts{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-  .reacts{display:flex;gap:6px;flex-wrap:wrap}
-  .react{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 11px;font-size:15px;cursor:pointer;line-height:1}
+  .acts{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:nowrap}
+  .reacts{display:flex;gap:5px;flex-wrap:nowrap}
+  .react{display:inline-flex;align-items:center;gap:3px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 9px;font-size:14px;cursor:pointer;line-height:1}
   .react i{font-style:normal;font-size:12px;font-weight:800;color:var(--ink-soft)}
   .react.on{background:#efe9ff;border-color:var(--violet)}
   .react.on i{color:var(--violet)}
@@ -226,6 +227,48 @@
   .sq .pc.bp{color:#161616}
   .sq.mv::after{content:"";position:absolute;width:30%;height:30%;border-radius:50%;background:rgba(70,45,170,.45)}
   .sq.cap{box-shadow:inset 0 0 0 3px rgba(214,64,96,.75)}
+  /* press feedback */
+  button:active{transform:scale(.97)}
+  /* toasts */
+  .toast-wrap{position:fixed;left:0;right:0;bottom:88px;z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;padding:0 16px}
+  .toast{background:var(--ink);color:#fff;border-radius:12px;padding:11px 16px;font-size:13.5px;font-weight:600;box-shadow:0 10px 28px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px;max-width:360px;animation:toastUp .25s ease;pointer-events:auto}
+  .toast.ok{background:#0f9d72}.toast.err{background:var(--coral)}
+  @keyframes toastUp{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+  /* confirm dialog */
+  .modal-back{position:fixed;inset:0;background:rgba(20,12,40,.45);z-index:210;display:flex;align-items:center;justify-content:center;padding:24px;animation:fadein .15s ease}
+  @keyframes fadein{from{opacity:0}to{opacity:1}}
+  .modal{background:var(--surface);border-radius:18px;padding:20px;max-width:320px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.3)}
+  .modal p{margin:0 0 16px;font-size:14.5px;line-height:1.5;color:var(--ink)}
+  .modal .mrow{display:flex;gap:10px}
+  .modal button{flex:1;border:none;border-radius:12px;padding:12px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
+  .modal .cancel{background:var(--surface-2);color:var(--ink)}
+  .modal .okb{background:var(--violet);color:#fff}.modal .danger{background:var(--coral);color:#fff}
+  /* skeletons */
+  .skel{background:linear-gradient(90deg,var(--surface-2) 25%,#e7e1f5 37%,var(--surface-2) 63%);background-size:400% 100%;animation:shimmer 1.4s ease infinite;border-radius:8px}
+  @keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+  .sk-card{background:var(--surface);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+  .sk-row{background:var(--surface);border-radius:14px;padding:12px;margin-bottom:10px;display:flex;gap:12px;align-items:center}
+  /* lightbox */
+  .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:220;display:none;align-items:center;justify-content:center;padding:16px}
+  .lightbox.open{display:flex}
+  .lightbox img{max-width:100%;max-height:100%;border-radius:10px}
+  .lx-close{position:absolute;top:14px;right:16px;color:#fff;font-size:24px;background:none;border:none;cursor:pointer;font-family:inherit}
+  img.post-media{cursor:zoom-in}
+  /* new posts pill */
+  .newpill{position:fixed;top:62px;left:50%;transform:translateX(-50%);z-index:46;background:var(--violet);color:#fff;border:none;border-radius:999px;padding:8px 16px;font-size:13px;font-weight:700;font-family:inherit;box-shadow:0 8px 20px rgba(108,77,242,.4);cursor:pointer;display:none}
+  .newpill.show{display:inline-flex;align-items:center;gap:6px;animation:toastUp .25s ease}
+  /* profile completeness nudge */
+  .nudge{background:var(--surface-2);border-radius:14px;padding:12px 14px;cursor:pointer}
+  .nudge .nt2{font-size:12.5px;color:var(--violet-ink);font-weight:700;margin-bottom:8px}
+  .nudge .bar{height:6px;background:#fff;border-radius:999px;overflow:hidden}.nudge .bar>i{display:block;height:100%;background:var(--violet);border-radius:999px}
+  /* comment timestamps + view all */
+  .cmt .ct{color:var(--ink-soft);font-size:10.5px;margin-left:5px}
+  .viewall{background:none;border:none;color:var(--ink-soft);font-size:12.5px;font-weight:700;font-family:inherit;cursor:pointer;padding:2px 0 6px;display:block;text-align:left}
+  /* menu item stepper */
+  .stepper{display:inline-flex;align-items:center;gap:16px;border:1px solid var(--line);border-radius:999px;padding:6px 16px}
+  .stepper button{border:none;background:none;font-size:22px;color:var(--violet);cursor:pointer;font-family:inherit;line-height:1;width:22px;padding:0}
+  .stepper b{font-size:16px;min-width:18px;text-align:center}
+  .mi-tap{display:flex;align-items:center;gap:12px;flex:1;cursor:pointer;min-width:0}
 </style>
 </head>
 <body>
@@ -324,6 +367,7 @@
       </div>
       <div class="ig-bio"><div class="ig-name" id="meNameShow">—</div><div class="ig-role" id="meRoleShow">—</div><p class="ig-bioText" id="meBioShow"></p></div>
       <div class="ig-actions"><button class="ig-btn" id="openEdit">Edit profile</button><button class="ig-btn" id="shareProfile">Share profile</button></div>
+      <div id="profNudge" style="margin:8px 0 0"></div>
       <div class="ig-hl">
         <button class="hl" id="hlOutings"><div>🎉</div><small>Outings</small></button>
         <button class="hl" id="hlOrders"><div>🧾</div><small>Orders</small></button>
@@ -362,6 +406,9 @@
   </div>
 </div>
 
+<div class="toast-wrap" id="toastWrap"></div>
+<div class="lightbox" id="lightbox"><button class="lx-close" id="lxClose">✕</button><img id="lxImg" src="" alt=""/></div>
+<button class="newpill" id="newPill">↑ <span id="newPillN">0</span> new posts</button>
 <script type="module">
 import { db, signInLink, signInPassword, emailAllowed, signOut, currentUser, ensureProfile, updateProfile, uploadAvatar, uploadMedia,
   getFeed, addPost, toggleLike, addComment, watchFeed, deletePost, deleteComment,
@@ -428,7 +475,7 @@ $('photoInput').onchange=async(e)=>{
   myProfile.avatar_url=url; setAva($('meAvaBig'),myProfile); setAva($('meAva1'),myProfile); setAva($('meAva2'),myProfile);
   $('profMsg').textContent='✓ Photo updated'; loadFeed(); loadOutings();
 };
-function refreshMeHeader(){const p=myProfile||{};$('meNameShow').textContent=p.name||'—';$('meRoleShow').textContent=[p.designation,p.department].filter(Boolean).join(' · ')||'Team';const b=$('meBioShow');if(b){b.textContent=p.bio||'';b.style.display=p.bio?'block':'none';}}
+function refreshMeHeader(){const p=myProfile||{};$('meNameShow').textContent=p.name||'—';$('meRoleShow').textContent=[p.designation,p.department].filter(Boolean).join(' · ')||'Team';const b=$('meBioShow');if(b){b.textContent=p.bio||'';b.style.display=p.bio?'block':'none';}renderNudge();}
 $('openEdit').onclick=openEditProfile;
 function openEditProfile(){
   const p=myProfile||{};
@@ -503,7 +550,7 @@ $('shareProfile').onclick=shareProfile;
 $('tabAll').onclick=()=>setGridTab('all');
 $('tabReels').onclick=()=>setGridTab('reels');
 function setGridTab(m){_gridMode=m;$('tabAll').classList.toggle('on',m==='all');$('tabReels').classList.toggle('on',m==='reels');renderMeGrid();}
-async function shareProfile(){const txt=((myProfile&&myProfile.name)||'A colleague')+' on InsideFA';try{if(navigator.share){await navigator.share({title:'InsideFA',text:txt,url:location.href});return;}}catch(e){}try{await navigator.clipboard.writeText(location.href);alert('Profile link copied!');}catch(e){alert(location.href);}}
+async function shareProfile(){const txt=((myProfile&&myProfile.name)||'A colleague')+' on InsideFA';try{if(navigator.share){await navigator.share({title:'InsideFA',text:txt,url:location.href});return;}}catch(e){}try{await navigator.clipboard.writeText(location.href);toast('Profile link copied!','ok');}catch(e){toast('Link: '+location.href);}}
 async function loadMeGrid(){ if(!me)return; _myPosts=await getUserPosts(me.id); renderMeGrid(); }
 function renderMeGrid(){
   const box=$('meGrid'); if(!box)return;
@@ -539,11 +586,12 @@ async function openOrderHistory(){
     const canCancel=o.status==='placed'||o.status==='preparing';
     return `<div class="adm"><div class="top"><b>₹${o.total}</b><span class="status-pill s-${o.status}">${lbl[o.status]||o.status}</span><span class="when">${timeAgo(o.created_at)}</span></div><div class="items">${items||'—'}</div>${canCancel?`<button class="abtn danger" data-ohc="${o.id}">Cancel order</button>`:''}</div>`;
   }).join('');
-  $('ohList').querySelectorAll('[data-ohc]').forEach(b=>b.onclick=async()=>{if(confirm('Cancel this order?')){const r=await cancelOrder(b.dataset.ohc);if(r&&r.error){alert('Could not cancel: '+r.error.message);return;}openOrderHistory();loadMyOrders();}});
+  $('ohList').querySelectorAll('[data-ohc]').forEach(b=>b.onclick=async()=>{if(await confirmAsk('Cancel this order?')){const r=await cancelOrder(b.dataset.ohc);if(r&&r.error){toast('Could not cancel: '+r.error.message,'err');return;}openOrderHistory();loadMyOrders();}});
 }
 
 /* FEED */
 async function loadFeed(){
+  if(!$('feedList').querySelector('.card')) $('feedList').innerHTML=feedSkeleton();
   const pr=await db.from('posts').select('*').order('created_at',{ascending:false});
   if(pr.error){$('feedList').innerHTML='<div class="empty">Could not load the feed:<br>'+esc(pr.error.message||'error')+'</div>';return;}
   const posts=pr.data||[];
@@ -552,11 +600,11 @@ async function loadFeed(){
   const [pf,lk,cm]=await Promise.all([
     db.from('profiles').select('id,name,initials,color,department,avatar_url').in('id',aids),
     db.from('post_likes').select('post_id,user_id,reaction').in('post_id',ids),
-    db.from('comments').select('id,post_id,text,author_id').in('post_id',ids).order('created_at')
+    db.from('comments').select('id,post_id,text,author_id,created_at').in('post_id',ids).order('created_at')
   ]);
   const P={}; (pf.data||[]).forEach(x=>P[x.id]=x);
   const L={}; (lk.data||[]).forEach(x=>{(L[x.post_id]=L[x.post_id]||[]).push({user_id:x.user_id,reaction:x.reaction});});
-  const CM={}; (cm.data||[]).forEach(x=>{(CM[x.post_id]=CM[x.post_id]||[]).push({id:x.id,text:x.text,author:{name:(P[x.author_id]||{}).name}});});
+  const CM={}; (cm.data||[]).forEach(x=>{(CM[x.post_id]=CM[x.post_id]||[]).push({id:x.id,text:x.text,at:x.created_at,author:{name:(P[x.author_id]||{}).name}});});
   posts.forEach(p=>{p.author=P[p.author_id]||{};p.post_likes=L[p.id]||[];p.comments=CM[p.id]||[];});
   _feed=posts;
   $('feedList').innerHTML=posts.map(p=>{
@@ -566,14 +614,14 @@ async function loadFeed(){
     const rc={}; likes.forEach(l=>{const r=l.reaction||'like';rc[r]=(rc[r]||0)+1;});
     return `<div class="card"><div class="post">
       <div class="who">${avaHTML(a)}
-        <div><div class="name name-link" data-profile="${a.id||''}">${esc(a.name||'Someone')}</div><div class="meta">${esc(a.department||'Team')}</div></div>
+        <div><div class="name name-link" data-profile="${a.id||''}">${esc(a.name||'Someone')}</div><div class="meta">${esc(a.department||'Team')} · ${timeAgo(p.created_at)}</div></div>
         ${isStaff?`<button class="del" data-delpost="${p.id}" title="Remove post">🗑</button>`:''}</div>
       <p>${tagify(esc(p.text))}</p>${p.media_url?(p.media_type==='video'?`<video class="post-media" src="${p.media_url}" controls preload="metadata"></video>`:`<img class="post-media" src="${p.media_url}"/>`):(p.media_emoji?`<div class="media">${p.media_emoji}</div>`:'')}
       <div class="acts">
         <div class="reacts" id="reacts-${p.id}">${REACTS.map(([k,e])=>`<button class="react ${myR===k?'on':''}" data-react="${p.id}" data-rk="${k}">${e}${rc[k]?`<i>${rc[k]}</i>`:''}</button>`).join('')}</div>
         <span class="cc" id="cc-${p.id}">💬 ${cmts.length}</span></div>
       <div class="comments" id="cms-${p.id}">
-        ${cmts.map(c=>`<div class="cmt"><span><b>${esc(c.author?.name||'Someone')}:</b> ${esc(c.text)}</span>${isStaff?`<button class="del" data-delcmt="${c.id}">✕</button>`:''}</div>`).join('')}
+        ${commentsInner(p)}
         <div class="cmt-row"><input placeholder="Add a comment…" data-ci="${p.id}"><button class="mini" data-send="${p.id}">Send</button></div>
       </div></div></div>`;
   }).join('');
@@ -581,9 +629,11 @@ async function loadFeed(){
   F.querySelectorAll('[data-react]').forEach(b=>b.onclick=()=>onReact(b.dataset.react,b.dataset.rk));
   F.querySelectorAll('[data-send]').forEach(b=>b.onclick=()=>sendComment(b.dataset.send));
   F.querySelectorAll('[data-ci]').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')sendComment(i.dataset.ci);}));
-  F.querySelectorAll('[data-delpost]').forEach(b=>b.onclick=async()=>{if(confirm('Remove this post?')){await deletePost(b.dataset.delpost);loadFeed();}});
+  F.querySelectorAll('[data-delpost]').forEach(b=>b.onclick=async()=>{if(await confirmAsk('Remove this post?',true)){await deletePost(b.dataset.delpost);loadFeed();}});
   F.querySelectorAll('[data-delcmt]').forEach(b=>b.onclick=async()=>{await deleteComment(b.dataset.delcmt);loadFeed();});
   F.querySelectorAll('[data-profile]').forEach(el=>el.onclick=()=>openProfile(el.dataset.profile));
+  F.querySelectorAll('[data-viewall]').forEach(b=>b.onclick=()=>expandComments(b.dataset.viewall));
+  F.querySelectorAll('img.post-media').forEach(im=>im.onclick=()=>openLightbox(im.src));
   loadNotifBadge();
 }
 function reactsHTML(p){
@@ -615,7 +665,30 @@ function sendComment(pid){
   }
   addComment(pid,text).catch(()=>{});
 }
-function scheduleFeed(){ clearTimeout(_feedTimer); _feedTimer=setTimeout(()=>loadFeed(),500); }
+const _expanded=new Set();
+function scheduleFeed(){ clearTimeout(_feedTimer); _feedTimer=setTimeout(()=>checkFeedUpdates(),600); }
+async function checkFeedUpdates(){
+  if(current!=='feed'){ loadFeed(); return; }
+  try{
+    const {data}=await db.from('posts').select('id').order('created_at',{ascending:false}).limit(40);
+    const have=new Set(_feed.map(p=>p.id));
+    const fresh=(data||[]).filter(r=>!have.has(r.id)).length;
+    if(fresh>0){ $('newPillN').textContent=fresh; $('newPill').classList.add('show'); }
+  }catch(e){}
+}
+$('newPill').onclick=()=>{ $('newPill').classList.remove('show'); const t=$('tab-feed'); if(t)t.scrollTop=0; loadFeed(); };
+function toast(msg,type){const w=$('toastWrap');if(!w)return;const t=document.createElement('div');t.className='toast'+(type==='ok'?' ok':type==='err'?' err':'');t.textContent=msg;w.appendChild(t);setTimeout(()=>{t.style.transition='opacity .3s';t.style.opacity='0';setTimeout(()=>t.remove(),300);},2600);}
+function confirmAsk(msg,danger){return new Promise(res=>{const back=document.createElement('div');back.className='modal-back';back.innerHTML=`<div class="modal"><p>${esc(msg)}</p><div class="mrow"><button class="cancel">Cancel</button><button class="${danger?'danger':'okb'}">${danger?'Remove':'Confirm'}</button></div></div>`;document.body.appendChild(back);const done=v=>{back.remove();res(v);};back.querySelector('.cancel').onclick=()=>done(false);back.querySelector('.mrow button:last-child').onclick=()=>done(true);back.onclick=e=>{if(e.target===back)done(false);};});}
+function openLightbox(src){const im=$('lxImg');if(!im)return;im.src=src;$('lightbox').classList.add('open');}
+if($('lxClose'))$('lxClose').onclick=()=>$('lightbox').classList.remove('open');
+if($('lightbox'))$('lightbox').onclick=e=>{if(e.target.id==='lightbox')$('lightbox').classList.remove('open');};
+function feedSkeleton(){return ('<div class="sk-card"><div style="display:flex;gap:10px;align-items:center;margin-bottom:10px"><div class="skel" style="width:40px;height:40px;border-radius:50%"></div><div style="flex:1"><div class="skel" style="height:10px;width:40%;margin-bottom:6px"></div><div class="skel" style="height:9px;width:25%"></div></div></div><div class="skel" style="height:10px;width:92%;margin-bottom:6px"></div><div class="skel" style="height:10px;width:65%"></div></div>').repeat(3);}
+function menuSkeleton(){return ('<div class="sk-row"><div class="skel" style="width:46px;height:46px;border-radius:12px"></div><div style="flex:1"><div class="skel" style="height:10px;width:45%;margin-bottom:6px"></div><div class="skel" style="height:9px;width:70%"></div></div></div>').repeat(4);}
+function cmtHTML(c){return `<div class="cmt"><span><b>${esc(c.author?.name||'Someone')}:</b> ${esc(c.text)}${c.at?`<span class="ct">${timeAgo(c.at)}</span>`:''}</span>${(isStaff&&c.id)?`<button class="del" data-delcmt="${c.id}">✕</button>`:''}</div>`;}
+function commentsInner(p){const cmts=p.comments||[];if(cmts.length>2&&!_expanded.has(p.id)){return `<button class="viewall" data-viewall="${p.id}">View all ${cmts.length} comments</button>`+cmts.slice(-2).map(cmtHTML).join('');}return cmts.map(cmtHTML).join('');}
+function expandComments(pid){_expanded.add(pid);const box=$('cms-'+pid);const p=_feed.find(x=>x.id===pid);if(!box||!p)return;box.innerHTML=commentsInner(p)+`<div class="cmt-row"><input placeholder="Add a comment…" data-ci="${pid}"><button class="mini" data-send="${pid}">Send</button></div>`;box.querySelectorAll('[data-send]').forEach(b=>b.onclick=()=>sendComment(b.dataset.send));box.querySelectorAll('[data-ci]').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')sendComment(i.dataset.ci);}));box.querySelectorAll('[data-delcmt]').forEach(b=>b.onclick=async()=>{await deleteComment(b.dataset.delcmt);loadFeed();});}
+function renderNudge(){const el=$('profNudge');if(!el)return;const p=myProfile||{};const checks=[!!p.avatar_url,!!(p.bio&&p.bio.trim()),!!(p.designation&&p.designation.trim()),!!(p.department&&p.department.trim()&&p.department!=='Team')];const done=checks.filter(Boolean).length,total=checks.length,pct=Math.round(done/total*100);if(done>=total){el.innerHTML='';return;}const miss=!p.avatar_url?'Add a profile photo':!(p.bio&&p.bio.trim())?'Add a short bio':!(p.designation&&p.designation.trim())?'Add your designation':'Finish your profile';el.innerHTML=`<div class="nudge" id="nudgeBtn"><div class="nt2">\u2728 ${miss} \u00B7 ${pct}% complete</div><div class="bar"><i style="width:${pct}%"></i></div></div>`;const nb=$('nudgeBtn');if(nb)nb.onclick=()=>{ if(!p.avatar_url)$('photoInput').click(); else openEditProfile(); };}
+function openMenuItem(id){const m=menuCache.find(x=>x.id===id);if(!m)return;let q=cart[id]||1;if(q<1)q=1;$('sheet').classList.add('open');const pic=m.image_url?`<img src="${m.image_url}" style="width:100%;height:170px;object-fit:cover;border-radius:14px"/>`:`<div style="height:130px;border-radius:14px;background:var(--surface-2);display:grid;place-items:center;font-size:50px">${m.emoji||'\U0001F37D\uFE0F'}</div>`;$('sheetBody').innerHTML=`<div class="grab"></div>${pic}<h3 style="margin:14px 0 2px">${esc(m.name)}</h3><div class="sub" style="margin-bottom:8px">\u20B9${m.price}</div>${m.description?`<p style="font-size:13.5px;color:var(--ink-soft);line-height:1.5;margin:0 0 14px">${esc(m.description)}</p>`:'<div style="height:6px"></div>'}<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><span style="font-size:13px;color:var(--ink-soft)">Quantity</span><div class="stepper"><button id="miMinus">\u2212</button><b id="miQty">${q}</b><button id="miPlus">+</button></div></div><button class="btn" id="miAddCart"></button>`;const upd=()=>{$('miQty').textContent=q;$('miAddCart').textContent=`Add ${q} to cart \u00B7 \u20B9${m.price*q}`;};upd();$('miMinus').onclick=()=>{if(q>1){q--;upd();}};$('miPlus').onclick=()=>{q++;upd();};$('miAddCart').onclick=()=>{cart[id]=q;renderMenu();updateCart();$('sheet').classList.remove('open');toast('Added to cart','ok');};}
 let pendingMedia=null;
 $('addImg').onclick=()=>$('imgInput').click();
 $('addVid').onclick=()=>$('vidInput').click();
@@ -666,14 +739,15 @@ $('postBtn').onclick=async()=>{
 };
 
 /* SHOP */
-async function loadMenu(){menuCache=await getMenu();renderMenu();}
+async function loadMenu(){if(!$('menuList').querySelector('.menu-item'))$('menuList').innerHTML=menuSkeleton();menuCache=await getMenu();renderMenu();}
 function renderMenu(){
   $('menuList').innerHTML=menuCache.map((m,i)=>{const q=cart[m.id]||0;
-    return `<div class="menu-item" style="${i?'border-top:1px solid var(--line)':''}"><div class="pic">${m.image_url?`<img src="${m.image_url}" alt=""/>`:(m.emoji||'🍽️')}</div>
-      <div class="info"><b>${esc(m.name)}</b><small>${esc(m.description||'')}</small></div><div class="price">₹${m.price}</div>
+    return `<div class="menu-item" style="${i?'border-top:1px solid var(--line)':''}"><div class="mi-tap" data-item="${m.id}"><div class="pic">${m.image_url?`<img src="${m.image_url}" alt=""/>`:(m.emoji||'🍽️')}</div>
+      <div class="info"><b>${esc(m.name)}</b><small>${esc(m.description||'')}</small></div></div><div class="price">₹${m.price}</div>
       ${q===0?`<button class="add" data-add="${m.id}">+</button>`:`<div class="qty"><button data-q="${m.id}" data-d="-1">−</button><b>${q}</b><button data-q="${m.id}" data-d="1">+</button></div>`}</div>`;}).join('');
   $('menuList').querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{cart[b.dataset.add]=1;renderMenu();updateCart();});
   $('menuList').querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{const id=b.dataset.q;cart[id]=Math.max(0,(cart[id]||0)+ +b.dataset.d);if(!cart[id])delete cart[id];renderMenu();updateCart();});
+  $('menuList').querySelectorAll('[data-item]').forEach(el=>el.onclick=()=>openMenuItem(el.dataset.item));
   updateCart();
 }
 const cartList=()=>menuCache.filter(m=>cart[m.id]).map(m=>({id:m.id,name:m.name,price:m.price,qty:cart[m.id]}));
@@ -715,7 +789,7 @@ async function loadMyOrders(){
     const canCancel=o.status==='placed'||o.status==='preparing';
     return `<div class="adm"><div class="top"><b>₹${o.total}</b><span class="status-pill s-${o.status}">${lbl[o.status]||o.status}</span><span class="when">${timeAgo(o.created_at)}</span></div><div class="items">${items||'—'}</div>${canCancel?`<button class="abtn danger" data-cancel="${o.id}">Cancel order</button>`:''}</div>`;
   }).join('');
-  box.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=async()=>{if(confirm('Cancel this order?')){const r=await cancelOrder(b.dataset.cancel);if(r&&r.error){alert('Could not cancel: '+r.error.message);return;}loadMyOrders();}});
+  box.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=async()=>{if(await confirmAsk('Cancel this order?')){const r=await cancelOrder(b.dataset.cancel);if(r&&r.error){toast('Could not cancel: '+r.error.message,'err');return;}loadMyOrders();}});
 }
 
 /* OUTINGS */
@@ -746,10 +820,10 @@ async function loadOutings(){
       <button class="join ${joined?'in':''}" data-join="${o.id}" ${full?'disabled':''}>${joined?"✓ You're in":(full?'Full':'Join them')}</button></div></div>`;
   }).join('');
   $('outingList').querySelectorAll('[data-join]').forEach(b=>b.onclick=async()=>{await toggleJoin(b.dataset.join);loadOutings();});
-  $('outingList').querySelectorAll('[data-delout]').forEach(b=>b.onclick=async()=>{if(confirm('Remove this plan?')){await deleteOuting(b.dataset.delout);loadOutings();}});
+  $('outingList').querySelectorAll('[data-delout]').forEach(b=>b.onclick=async()=>{if(await confirmAsk('Remove this plan?',true)){await deleteOuting(b.dataset.delout);loadOutings();}});
   $('outingList').querySelectorAll('[data-profile]').forEach(el=>el.onclick=()=>openProfile(el.dataset.profile));
 }
-$('outingBtn').onclick=async()=>{const el=$('newOuting');if(!el.value.trim())return;el.disabled=true;const cap=parseInt($('outCap').value)||null;const err=await addOuting({text:el.value.trim(),pill:'🗓️ New plan',event_at:$('outWhen').value||null,location:$('outWhere').value.trim()||null,capacity:cap});el.disabled=false;if(err){alert('Could not post plan: '+(err.message||err));return;}el.value='';$('outWhen').value='';$('outWhere').value='';$('outCap').value='';loadOutings();};
+$('outingBtn').onclick=async()=>{const el=$('newOuting');if(!el.value.trim())return;el.disabled=true;const cap=parseInt($('outCap').value)||null;const err=await addOuting({text:el.value.trim(),pill:'🗓️ New plan',event_at:$('outWhen').value||null,location:$('outWhere').value.trim()||null,capacity:cap});el.disabled=false;if(err){toast('Could not post plan: '+(err.message||err),'err');return;}el.value='';$('outWhen').value='';$('outWhere').value='';$('outCap').value='';loadOutings();};
 
 /* PLAY */
 async function loadLeaderboard(){
@@ -1013,7 +1087,7 @@ async function loadAdminMenu(){
     <button class="abtn" data-avl="${m.id}" data-to="${m.available?'false':'true'}">${m.available?'Sold out':'Restock'}</button>
     <button class="abtn danger" data-delmenu="${m.id}">Delete</button></div></div>`).join('');
   $('admMenu').querySelectorAll('[data-avl]').forEach(b=>b.onclick=async()=>{await setMenuAvailable(b.dataset.avl,b.dataset.to==='true');loadAdminMenu();loadMenu();});
-  $('admMenu').querySelectorAll('[data-delmenu]').forEach(b=>b.onclick=async()=>{if(confirm('Delete item?')){await deleteMenuItem(b.dataset.delmenu);loadAdminMenu();loadMenu();}});
+  $('admMenu').querySelectorAll('[data-delmenu]').forEach(b=>b.onclick=async()=>{if(await confirmAsk('Delete item?',true)){await deleteMenuItem(b.dataset.delmenu);loadAdminMenu();loadMenu();}});
 }
 let _miFile=null;
 $('miPhotoBtn').onclick=()=>$('miPhoto').click();
@@ -1025,7 +1099,7 @@ async function loadUsers(){
     <div class="grow"><div class="nm">${esc(u.name)} ${u.is_staff?'<span class="tag-staff">staff</span>':''} ${u.blocked?'<span class="tag-block">blocked</span>':''}</div><div class="dp">${esc(u.department||'Team')}</div></div>
     ${u.id===me.id?'<span class="dp">you</span>':`<button class="abtn" data-block="${u.id}" data-to="${u.blocked?'false':'true'}">${u.blocked?'Unblock':'Block'}</button><button class="abtn danger" data-remove="${u.id}">Remove</button>`}</div></div>`).join('');
   $('admUsers').querySelectorAll('[data-block]').forEach(b=>b.onclick=async()=>{await setBlocked(b.dataset.block,b.dataset.to==='true');loadUsers();});
-  $('admUsers').querySelectorAll('[data-remove]').forEach(b=>b.onclick=async()=>{if(confirm('Remove this user and their posts/comments/outings?')){await removeUser(b.dataset.remove);loadUsers();loadFeed();}});
+  $('admUsers').querySelectorAll('[data-remove]').forEach(b=>b.onclick=async()=>{if(await confirmAsk('Remove this user and their posts/comments/outings?',true)){await removeUser(b.dataset.remove);loadUsers();loadFeed();}});
 }
 
 /* NAV */
@@ -1039,6 +1113,7 @@ $('nav').querySelectorAll('button').forEach(btn=>btn.onclick=()=>{
   if(current==='play'){renderOnline();challengeCount=0;setNavBadge('play',0);}
   if(current==='shop')loadMyOrders();
   if(current==='me')loadMeGrid();
+  if(current==='feed')$('newPill').classList.remove('show');
 });
 </script>
 </body>
