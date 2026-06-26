@@ -88,6 +88,33 @@ export async function toggleLike(postId) {
   return data ? db.from('post_likes').delete().eq('post_id', postId).eq('user_id', user.id)
               : db.from('post_likes').insert({ post_id: postId, user_id: user.id });
 }
+export async function getNotifications(userId) {
+  const out = [];
+  const { data: myPosts } = await db.from('posts').select('id').eq('author_id', userId);
+  const myIds = (myPosts || []).map(p => p.id);
+  if (myIds.length) {
+    const { data: cm } = await db.from('comments')
+      .select('id,text,author_id,created_at').in('post_id', myIds)
+      .order('created_at', { ascending: false }).limit(20);
+    (cm || []).filter(c => c.author_id !== userId)
+      .forEach(c => out.push({ type: 'comment', at: c.created_at, who_id: c.author_id, text: 'commented on your post: \u201C' + c.text + '\u201D' }));
+  }
+  const { data: og } = await db.from('outings')
+    .select('id,text,author_id,created_at').order('created_at', { ascending: false }).limit(8);
+  (og || []).filter(o => o.author_id !== userId)
+    .forEach(o => out.push({ type: 'outing', at: o.created_at, who_id: o.author_id, text: 'posted a plan: \u201C' + o.text + '\u201D' }));
+  const { data: rd } = await db.from('orders')
+    .select('id,created_at').eq('user_id', userId).eq('status', 'ready');
+  (rd || []).forEach(o => out.push({ type: 'order', at: o.created_at, who: 'Tuck shop', text: 'Your order is ready to collect' }));
+  const aids = [...new Set(out.filter(x => x.who_id).map(x => x.who_id))];
+  if (aids.length) {
+    const { data: ps } = await db.from('profiles').select('id,name').in('id', aids);
+    const NM = {}; (ps || []).forEach(p => NM[p.id] = p.name);
+    out.forEach(x => { if (x.who_id) x.who = NM[x.who_id] || 'Someone'; });
+  }
+  out.sort((a, b) => new Date(b.at) - new Date(a.at));
+  return out;
+}
 export async function getUserPosts(userId) {
   const { data } = await db.from('posts').select('id,text,media_url,media_type,media_emoji,created_at').eq('author_id', userId).order('created_at', { ascending: false });
   return data ?? [];
